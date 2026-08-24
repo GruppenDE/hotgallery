@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Lamp · Panel de administración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --accent: #cba35a;
+        --accent-strong: #e6c07d;
+        --accent-soft: rgba(203, 163, 90, 0.35);
+        --ink: #f2f1ed;
+        --ink-muted: #9a9ba8;
+        --panel: rgba(19, 20, 26, 0.88);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --field: rgba(9, 10, 14, 0.65);
+        --field-border: rgba(255, 255, 255, 0.12);
+        --danger: #e2645f;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    html, body {
+        height: 100%;
+    }
+
+    body {
+        color: #fff;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    /* ============================================
+       VISTA 1: LOGIN (lámpara)
+       ============================================ */
+    body.view-login {
+        background: radial-gradient(ellipse 900px 700px at 50% 38%, #17151c 0%, #0b0b0e 60%, #08080a 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        position: relative;
+        transition: background 1s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+        padding: 20px;
+    }
+
+    #galleryPage { display: none; }
+    body.view-gallery #loginPage { display: none; }
+    body.view-gallery #galleryPage { display: block; }
+
+    /* Halo ambiental centrado en la lámpara, independiente del fondo base */
+    body.view-login::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(ellipse 700px 600px at 50% 30%,
+            rgba(255, 214, 130, 0.32) 0%,
+            rgba(255, 214, 130, 0.12) 45%,
+            rgba(255, 214, 130, 0) 75%);
+        opacity: 0;
+        transition: opacity 1s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    body.view-login.light-on::after {
+        opacity: 1;
+    }
+
+    /* Techo del que cuelga la lámpara */
+    .ceiling {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #1a1a20;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    /* Escena: contiene únicamente el formulario, centrado en el viewport */
+    .scene {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 340px;
+        padding-top: clamp(140px, 26vh, 220px);
+    }
+
+    /* Lámpara fija en la parte superior del encabezado, colgando del techo,
+       separada del formulario que vive más abajo, centrado aparte */
+    .lamp-container {
+        position: fixed;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 10;
+    }
+
+    .lamp-wire {
+        width: 2px;
+        height: clamp(60px, 14vh, 110px);
+        background: linear-gradient(180deg, rgba(85,85,85,0) 0%, #555 25%, #555 100%);
+    }
+
+    .lamp-shade {
+        width: 120px;
+        height: 45px;
+        background: #3d3d44;
+        border-radius: 0 0 60px 60px;
+        position: relative;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 -2px 6px rgba(0,0,0,0.3);
+        transition: background 0.6s ease, box-shadow 0.6s ease;
+    }
+
+    /* Bombilla / halo cálido alrededor de la pantalla del foco */
+    .lamp-shade::after {
+        content: '';
+        position: absolute;
+        top: 62%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,244,214,0.95) 0%, rgba(255,214,120,0.5) 45%, rgba(255,214,120,0) 75%);
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        pointer-events: none;
+    }
+
+    /* Haz de luz: cono de luz cálido que nace en la pantalla del foco
+       y se abre en un degradado suave hasta cubrir el formulario de login */
+    .lamp-light {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 340px;
+        height: 320px;
+        background:
+            radial-gradient(ellipse at 50% 0%, rgba(255, 225, 150, 0.28) 0%, rgba(255, 210, 130, 0.1) 35%, rgba(255, 200, 120, 0) 70%),
+            linear-gradient(180deg, rgba(255, 214, 120, 0.14) 0%, rgba(255, 214, 120, 0.05) 55%, rgba(255, 214, 120, 0) 100%);
+        clip-path: polygon(34% 0%, 66% 0%, 100% 100%, 0% 100%);
+        pointer-events: none;
+        opacity: 0;
+        filter: blur(2px);
+        transition: opacity 0.7s ease, background 0.7s ease;
+        z-index: 15;
+    }
+
+    /* Cuerda física interactiva por arrastre (drag) */
+    .pull-string-container {
+        position: absolute;
+        right: 25px;
+        top: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: grab;
+        touch-action: none;
+        padding: 0 15px;
+        margin-right: -15px;
+        z-index: 25;
+        border-radius: 8px;
+    }
+
+    .pull-string-container:active {
+        cursor: grabbing;
+    }
+
+    .pull-string-container:focus-visible {
+        outline: 2px solid #ffd700;
+        outline-offset: 4px;
+    }
+
+    .pull-string {
+        width: 2px;
+        height: 70px;
+        background: #aaa;
+        transform-origin: top center;
+        transition: height 0.05s ease-out;
+    }
+
+    .pull-ball {
+        width: 14px;
+        height: 14px;
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        border-radius: 50%;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        transition: transform 0.1s;
+    }
+
+    /* Formulario de Login */
+    .login-form {
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid var(--panel-border);
+        padding: clamp(30px, 4vw, 40px);
+        border-radius: 14px;
+        width: 100%;
+        max-width: 340px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05);
+
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-40px) scale(0.9);
+        transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    box-shadow 0.9s ease,
+                    visibility 0.6s;
+        z-index: 20;
+        margin-top: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Resplandor cálido que "alumbra" el formulario cuando la lámpara se enciende */
+    .login-form::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% -10%,
+            rgba(230, 192, 125, 0.16) 0%,
+            rgba(203, 163, 90, 0.06) 40%,
+            rgba(203, 163, 90, 0) 75%);
+        opacity: 0;
+        transition: opacity 0.9s ease;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .login-form > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Estado Encendido (Luz ON) */
+    body.light-on {
+        background: radial-gradient(ellipse 900px 700px at 50% 32%, #221d2c 0%, #16131c 55%, #0d0c11 100%);
+    }
+
+    body.light-on .lamp-shade {
+        background: radial-gradient(ellipse at 50% 100%, #ffdca0 0%, #e0a94f 35%, #6b5636 70%, #4a463f 100%);
+        box-shadow: 0 0 45px rgba(255, 214, 120, 0.75), 0 5px 20px rgba(0,0,0,0.6), inset 0 -4px 10px rgba(0,0,0,0.2);
+    }
+
+    body.light-on .lamp-shade::after {
+        opacity: 0;
+    }
+
+    body.light-on .login-form {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 -6px 30px rgba(203, 163, 90, 0.16);
+    }
+
+    body.light-on .login-form::before {
+        opacity: 1;
+    }
+
+    @keyframes flicker {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.94; }
+        76% { opacity: 0.9; }
+        78% { opacity: 1; }
+    }
+
+    .form-eyebrow {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2.2px;
+        margin-bottom: 10px;
+    }
+
+    .login-form h2 {
+        font-family: 'Fraunces', serif;
+        font-optical-sizing: auto;
+        font-size: clamp(1.55rem, 2.5vw, 1.85rem);
+        font-weight: 600;
+        color: var(--ink);
+        text-align: center;
+        letter-spacing: 0.2px;
+        line-height: 1.2;
+    }
+
+    .form-subtitle {
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+        text-align: center;
+        margin-top: 6px;
+        margin-bottom: 26px;
+        line-height: 1.5;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.72rem;
+        color: var(--ink-muted);
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 500;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 11px 14px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: 0.9rem;
+        outline: none;
+        transition: all 0.25s ease;
+    }
+
+    .form-group input::placeholder {
+        color: rgba(154, 155, 168, 0.55);
+    }
+
+    .form-group input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+        background: rgba(9, 10, 14, 0.9);
+    }
+
+    .form-options {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 4px 0 22px;
+        font-size: 0.8rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--ink-muted);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .remember-me input {
+        width: 14px;
+        height: 14px;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+
+    .form-options a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .form-options a:hover,
+    .form-options a:focus-visible {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .form-options a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 2px;
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        border: none;
+        border-radius: 8px;
+        color: #1a1508;
+        font-weight: 600;
+        font-size: 0.92rem;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+        margin-top: 2px;
+        box-shadow: 0 4px 15px rgba(203, 163, 90, 0.25);
+    }
+
+    .login-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(203, 163, 90, 0.35);
+    }
+
+    .login-btn:active:not(:disabled) {
+        transform: translateY(1px);
+    }
+
+    .login-btn:focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 2px;
+    }
+
+    .login-btn:disabled {
+        opacity: 0.8;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .form-footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--ink-muted);
+    }
+
+    .form-footer a {
+        color: var(--accent);
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .form-footer a:hover,
+    .form-footer a:focus-visible {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .form-footer a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 2px;
+    }
+
+    /* Formulario de registro: comparte estilo con .login-form,
+       pero se muestra/oculta según el modo activo de la escena */
+    .register-form {
+        display: none;
+    }
+
+    .scene.mode-register #loginCard {
+        display: none;
+    }
+
+    .scene.mode-register #registerCard {
+        display: block;
+    }
+
+    .form-error {
+        color: #ff8f8f;
+        font-size: 0.76rem;
+        margin: -10px 0 14px;
+        line-height: 1.4;
+        display: none;
+    }
+
+    .form-error.visible {
+        display: block;
+    }
+
+    .hint {
+        position: fixed;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255,255,255,0.4);
+        font-size: 0.75rem;
+        text-align: center;
+        width: 90%;
+        letter-spacing: 0.5px;
+        animation: pulseHint 2s infinite;
+        pointer-events: none;
+    }
+
+    @keyframes pulseHint {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+    }
+
+    /* ============================================
+       Versión escritorio: la lámpara se mantiene
+       vertical, colgando del techo justo encima del
+       formulario de login (misma disposición que en
+       móvil, solo con más espacio de caída del cable).
+       ============================================ */
+    @media (min-width: 860px) {
+        .lamp-wire {
+            height: clamp(90px, 18vh, 160px);
+        }
+
+        .lamp-container {
+            top: 8vh;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .scene {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            padding-top: 0;
+            transform: translate(-50%, -50%);
+            margin-top: 8vh;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .lamp-shade { width: 100px; height: 40px; }
+    }
+
+    /* ============================================
+       VISTA 2: PANEL DE ADMINISTRACIÓN (galería)
+       ============================================ */
+    body.view-gallery {
+        background:
+            radial-gradient(ellipse 1100px 800px at 50% 0%, #1a171f 0%, #0b0b0e 55%, #08080a 100%);
+        padding: 32px 20px 70px;
+    }
+
+    /* ============================================
+       HEADER DE NAVEGACIÓN (menú hamburguesa)
+       ============================================ */
+    .site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: rgba(11, 11, 14, 0.82);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--panel-border);
+    }
+
+    .site-nav-inner {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 30px;
+    }
+
+    .site-nav-brand {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: var(--ink);
+        letter-spacing: 0.2px;
+        margin-right: auto;
+    }
+
+    .hamburger-btn {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 9px;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .hamburger-btn:hover {
+        border-color: var(--accent-soft);
+    }
+
+    .hamburger-btn span {
+        display: block;
+        width: 18px;
+        height: 2px;
+        background: var(--ink);
+        border-radius: 2px;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .hamburger-btn.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger-btn.open span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-btn.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+    }
+
+    .nav-menu {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .nav-link {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--ink-muted);
+        font-size: 0.86rem;
+        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .nav-link:hover {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-link.active {
+        color: var(--accent-strong);
+        background: rgba(203, 163, 90, 0.1);
+        border-color: var(--accent-soft);
+    }
+
+    .nav-link-18 {
+        color: var(--danger);
+        border-color: rgba(226, 100, 95, 0.35);
+    }
+
+    .nav-link-18:hover {
+        color: #fff;
+        background: rgba(226, 100, 95, 0.18);
+    }
+
+    .nav-link-18.active {
+        color: #fff;
+        background: var(--danger);
+        border-color: var(--danger);
+    }
+
+    @media (max-width: 720px) {
+        .nav-menu {
+            position: fixed;
+            top: 67px;
+            left: 0;
+            right: 0;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 4px;
+            background: rgba(11, 11, 14, 0.97);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 10px 16px 16px;
+            transform: translateY(-8px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+        }
+
+        .nav-menu.open {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .nav-link {
+            padding: 12px 14px;
+            border-radius: 10px;
+        }
+    }
+
+    .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 32px;
+        padding: 26px 30px;
+        background: linear-gradient(155deg, rgba(255,255,255,0.045), rgba(255,255,255,0.01));
+        border: 1px solid var(--panel-border);
+        border-radius: 18px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 20px 45px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+        position: relative;
+        overflow: hidden;
+    }
+
+    header::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        left: -10%;
+        width: 45%;
+        height: 220%;
+        background: radial-gradient(ellipse, rgba(203, 163, 90, 0.14) 0%, rgba(203, 163, 90, 0) 70%);
+        pointer-events: none;
+    }
+
+    .brand-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2.2px;
+        margin-bottom: 6px;
+    }
+
+    /* Ícono de estrella que identifica al administrador de la web */
+    .admin-star {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 15px;
+        height: 15px;
+        color: var(--accent-strong);
+        filter: drop-shadow(0 0 4px rgba(230, 192, 125, 0.6));
+        flex-shrink: 0;
+    }
+
+    .admin-star svg {
+        width: 100%;
+        height: 100%;
+        fill: currentColor;
+    }
+
+    .admin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: rgba(203, 163, 90, 0.1);
+        border: 1px solid var(--accent-soft);
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--accent-strong);
+        letter-spacing: 0.3px;
+        margin-top: 8px;
+    }
+
+    .admin-badge .admin-star {
+        width: 13px;
+        height: 13px;
+    }
+
+    header h1 {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        letter-spacing: 0.2px;
+    }
+
+    header p {
+        color: var(--ink-muted);
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    .logout-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 20px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 10px;
+        color: var(--ink);
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+    .logout-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent-strong);
+        background: rgba(203, 163, 90, 0.08);
+        transform: translateY(-1px);
+    }
+
+    /* Zona de carga */
+    .upload-zone {
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1.5px dashed var(--field-border);
+        border-radius: 16px;
+        padding: clamp(30px, 5vw, 46px);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 34px;
+        position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+        border-color: var(--accent);
+        background: rgba(203, 163, 90, 0.06);
+        transform: translateY(-1px);
+        box-shadow: 0 16px 34px rgba(0,0,0,0.3);
+    }
+
+    .upload-zone .icon {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(155deg, rgba(203, 163, 90, 0.18), rgba(203, 163, 90, 0.04));
+        border: 1px solid var(--accent-soft);
+        font-size: 1.5rem;
+        transition: transform 0.25s ease;
+    }
+
+    .upload-zone:hover .icon,
+    .upload-zone.dragover .icon {
+        transform: scale(1.06);
+    }
+
+    .upload-zone h3 {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+    }
+
+    .upload-zone p {
+        color: var(--ink-muted);
+        font-size: 0.82rem;
+    }
+
+    .upload-zone .formats {
+        display: inline-flex;
+        gap: 6px;
+        margin-top: 14px;
+    }
+
+    .upload-zone .formats span {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        color: var(--ink-muted);
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--field-border);
+        background: var(--field);
+    }
+
+    .upload-zone input[type="file"] { display: none; }
+
+    .status-msg {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--ink-muted);
+        margin: -16px 0 24px;
+        min-height: 18px;
+        transition: color 0.2s ease;
+    }
+
+    .status-msg.error { color: var(--danger); }
+    .status-msg.success { color: var(--accent-strong); }
+
+    /* Grid de fotos */
+    .gallery-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .gallery-header h2 {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    .gallery-header span {
+        color: var(--ink-muted);
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--field-border);
+        background: var(--field);
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 24px 18px;
+    }
+
+    /* Tarjeta estilo "póster" — imagen, insignias y ficha inferior */
+    .photo-card {
+        display: flex;
+        flex-direction: column;
+        animation: cardIn 0.35s ease both;
+    }
+
+    @keyframes cardIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .photo-media {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        aspect-ratio: 2 / 3;
+        box-shadow: 0 14px 30px rgba(0,0,0,0.5);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .photo-card:hover .photo-media {
+        transform: translateY(-4px);
+        border-color: var(--accent-soft);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .photo-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.35s ease;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
+    }
+
+    .photo-card:hover .photo-media img { transform: scale(1.05); }
+
+    /* Insignia de resolución, arriba a la derecha (estilo "puntuación") */
+    .badge-res {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 3px 7px;
+        background: rgba(10, 10, 12, 0.72);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 6px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        color: var(--accent-strong);
+        backdrop-filter: blur(6px);
+        z-index: 2;
+    }
+
+    /* Insignia "nuevo", arriba a la izquierda (estilo logotipo de servicio) */
+    .badge-new {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3px 8px;
+        background: rgba(203, 163, 90, 0.92);
+        border-radius: 6px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: #14120d;
+        z-index: 2;
+    }
+
+    .photo-media .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.8) 100%);
+        opacity: 0;
+        transition: opacity 0.22s ease;
+    }
+
+    .photo-card:hover .overlay,
+    .photo-card:focus-within .overlay { opacity: 1; }
+
+    .delete-btn {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        background: rgba(226, 100, 95, 0.92);
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+        z-index: 2;
+    }
+
+    .photo-card:hover .delete-btn,
+    .photo-card:focus-within .delete-btn { opacity: 1; transform: translateY(0); }
+
+    .delete-btn:hover { background: #ff6f68; }
+    .delete-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .download-btn {
+        position: absolute;
+        bottom: 8px;
+        right: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        background: rgba(203, 163, 90, 0.92);
+        border: none;
+        border-radius: 8px;
+        color: #14131a;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+        z-index: 2;
+    }
+
+    .photo-card:hover .download-btn,
+    .photo-card:focus-within .download-btn { opacity: 1; transform: translateY(0); }
+
+    .download-btn:hover { background: var(--accent-strong); }
+    .download-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; }
+
+    /* Ficha bajo la imagen, estilo título + metadatos de catálogo */
+    .photo-info {
+        padding: 10px 2px 0;
+    }
+
+    .photo-title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 0.86rem;
+        color: var(--ink);
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .photo-meta {
+        margin-top: 4px;
+        font-size: 0.72rem;
+        color: var(--ink-muted);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--ink-muted);
+        font-size: 0.9rem;
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        background: var(--panel);
+    }
+
+    .empty-state .icon { font-size: 2.2rem; display: block; margin-bottom: 10px; opacity: 0.6; }
+
+    /* Paginación de la galería */
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 28px;
+    }
+
+    .pagination:empty { display: none; }
+
+    .page-btn {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .page-btn:hover:not(:disabled) {
+        border-color: var(--accent-soft);
+        color: var(--accent-strong);
+    }
+
+    .page-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #14131a;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .page-ellipsis {
+        color: var(--ink-muted);
+        padding: 0 4px;
+        font-size: 0.85rem;
+    }
+
+    /* Modal de confirmación */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 20px;
+    }
+
+    .modal-backdrop.visible { display: flex; }
+
+    .modal {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        padding: 26px;
+        max-width: 340px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.65);
+    }
+
+    .modal h3 {
+        font-family: 'Fraunces', serif;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+
+    .modal p {
+        color: var(--ink-muted);
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .modal-actions button {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .modal-actions button:hover { transform: translateY(-1px); }
+
+    .btn-cancel {
+        background: var(--field);
+        border: 1px solid var(--field-border) !important;
+        color: var(--ink);
+    }
+
+    .btn-confirm {
+        background: var(--danger);
+        color: #fff;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+</head>
+<body class="view-login">
+
+<!-- ============================================
+     VISTA 1: LOGIN CON LÁMPARA
+     ============================================ -->
+<div id="loginPage">
+
+    <div class="ceiling"></div>
+
+    <!-- Lámpara y cuerda interactiva: fija en la parte superior del encabezado -->
+    <div class="lamp-container" id="lamp">
+        <div class="lamp-wire"></div>
+        <div class="lamp-shade">
+            <div class="pull-string-container"
+                 id="pullTrigger"
+                 role="button"
+                 tabindex="0"
+                 aria-pressed="false"
+                 aria-label="Encender o apagar la lámpara para mostrar el formulario">
+                <div class="pull-string" id="string"></div>
+                <div class="pull-ball" id="ball"></div>
+            </div>
+            <div class="lamp-light"></div>
+        </div>
+    </div>
+
+    <div class="scene">
+        <!-- Formulario de Login -->
+        <div class="login-form" id="loginCard" lang="en">
+            <span class="form-eyebrow">Sign in</span>
+            <h2>Welcome back</h2>
+            <p class="form-subtitle">Enter your credentials to access your workspace.</p>
+            <form id="loginForm" autocomplete="on">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input id="username" name="username" type="text" placeholder="Enter your username" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+                </div>
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember">
+                        Remember me
+                    </label>
+                    <a href="#">Forgot password?</a>
+                </div>
+                <p class="form-error" id="loginError"></p>
+                <button class="login-btn" type="submit">Sign In</button>
+            </form>
+            <p class="form-footer">Don't have an account? <a href="#" id="toRegister">Create one</a></p>
+        </div>
+
+        <!-- Formulario de Registro -->
+        <div class="login-form register-form" id="registerCard" lang="en">
+            <span class="form-eyebrow">Sign up</span>
+            <h2>Create your account</h2>
+            <p class="form-subtitle">Join the workspace in just a few seconds.</p>
+            <form id="registerForm" autocomplete="on" novalidate>
+                <div class="form-group">
+                    <label for="reg-username">Username</label>
+                    <input id="reg-username" name="username" type="text" placeholder="Choose a username" autocomplete="username" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input id="reg-password" name="password" type="password" placeholder="Create a password" autocomplete="new-password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="reg-confirm">Confirm password</label>
+                    <input id="reg-confirm" name="confirm" type="password" placeholder="Repeat your password" autocomplete="new-password" required minlength="6">
+                </div>
+                <p class="form-error" id="registerError"></p>
+                <button class="login-btn" type="submit">Create account</button>
+            </form>
+            <p class="form-footer">Already have an account? <a href="#" id="toLogin">Sign in</a></p>
+        </div>
+    </div>
+
+    <p class="hint" id="hint">🖱️ Mantén presionado y arrastra la cuerda hacia abajo (o pulsa Enter) para encender</p>
+
+</div>
+
+<!-- ============================================
+     VISTA 2: PANEL DE ADMINISTRACIÓN (galería)
+     ============================================ -->
+<div id="galleryPage">
+
+<nav class="site-nav">
+    <div class="site-nav-inner">
+        <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu">
+            <span></span><span></span><span></span>
+        </button>
+        <span class="site-nav-brand">Lamp</span>
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="#" class="nav-link active" data-section="inicio">Inicio</a></li>
+            <li><a href="#" class="nav-link" data-section="anime">Fotos de anime</a></li>
+            <li><a href="#" class="nav-link" data-section="premium">Fotos premium</a></li>
+            <li><a href="#" class="nav-link nav-link-18" data-section="adultos">+18</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="wrap">
+    <header>
+        <div>
+            <span class="brand-eyebrow">
+                <span class="admin-star" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1L12 1.5z"/></svg>
+                </span>
+                Panel de administración
+            </span>
+            <h1>Mi galería</h1>
+            <p>Sube y organiza las fotos de tu web, cristhianzh1994</p>
+            <span class="admin-badge" title="Cuenta con permisos de administrador">
+                <span class="admin-star" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1L12 1.5z"/></svg>
+                </span>
+                Administrador
+            </span>
+        </div>
+        <button class="logout-btn" id="logoutBtn">
+            ⎋ Cerrar sesión
+        </button>
+    </header>
+
+    <div class="upload-zone" id="uploadZone">
+        <div class="icon">📷</div>
+        <h3>Importar fotos</h3>
+        <p>Haz clic o arrastra tus imágenes aquí — se guardan en máxima calidad</p>
+        <div class="formats">
+            <span>JPG</span>
+            <span>PNG</span>
+            <span>WEBP</span>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+    </div>
+
+    <p class="status-msg" id="statusMsg"></p>
+
+    <div class="gallery-header">
+        <h2>Tus fotos</h2>
+        <span id="photoCount">0 fotos</span>
+    </div>
+
+    <div id="galleryGrid" class="gallery-grid"></div>
+    <div class="empty-state" id="emptyState">
+        <span class="icon">🖼️</span>
+        Aún no has subido ninguna foto.<br>Usa la zona de arriba para importar tus primeras imágenes.
+    </div>
+    <nav class="pagination" id="pagination" aria-label="Paginación de la galería"></nav>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+        <h3>¿Eliminar esta foto?</h3>
+        <p>Esta acción no se puede deshacer. La foto se borrará de tu galería de forma permanente.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelDelete">Cancelar</button>
+            <button class="btn-confirm" id="confirmDelete">Eliminar</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    const body = document.body;
+
+    /* ============================================
+       PROTECCIÓN BÁSICA CONTRA DESCARGA FÁCIL
+       (disuasoria, no es seguridad real: cualquiera
+       con conocimientos técnicos puede evitarla)
+       ============================================ */
+    // Bloquea el menú contextual (clic derecho) en toda la página
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Bloquea arrastrar imágenes fuera de la página
+    document.addEventListener('dragstart', (e) => {
+        if (e.target.tagName === 'IMG') e.preventDefault();
+    });
+
+    // Bloquea atajos de teclado comunes para guardar, ver código o abrir devtools
+    document.addEventListener('keydown', (e) => {
+        const key = e.key.toUpperCase();
+
+        // F12 → herramientas de desarrollador
+        if (key === 'F12') { e.preventDefault(); return; }
+
+        // Ctrl/Cmd + Shift + I / J / C → devtools / consola / inspector
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'J', 'C'].includes(key)) {
+            e.preventDefault();
+            return;
+        }
+
+        // Ctrl/Cmd + U → ver código fuente
+        if ((e.ctrlKey || e.metaKey) && key === 'U') { e.preventDefault(); return; }
+
+        // Ctrl/Cmd + S → guardar página
+        if ((e.ctrlKey || e.metaKey) && key === 'S') { e.preventDefault(); return; }
+    });
+
+
+    /* ============================================
+       Navegación entre vistas (antes eran 2 páginas,
+       ahora son 2 secciones dentro del mismo archivo)
+       ============================================ */
+    function goToGallery() {
+        body.classList.remove('view-login', 'light-on');
+        body.classList.add('view-gallery');
+        loadPhotos();
+        render();
+    }
+
+    function goToLogin() {
+        body.classList.remove('view-gallery');
+        body.classList.add('view-login');
+    }
+
+    /* ============================================
+       VISTA 1: LOGIN CON LÁMPARA
+       ============================================ */
+    const pullTrigger = document.getElementById('pullTrigger');
+    const stringElem = document.getElementById('string');
+    const ballElem = document.getElementById('ball');
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = loginForm.querySelector('.login-btn');
+
+    const scene = document.querySelector('.scene');
+    const toRegister = document.getElementById('toRegister');
+    const toLogin = document.getElementById('toLogin');
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = registerForm.querySelector('.login-btn');
+    const registerError = document.getElementById('registerError');
+
+    let isDragging = false;
+    let startY = 0;
+    let currentPull = 0;
+    let totalMovement = 0;
+    let justDragToggled = false;
+    const maxPull = 70;
+    const threshold = 40;
+
+    function toggleLight() {
+        const isOn = body.classList.toggle('light-on');
+        pullTrigger.setAttribute('aria-pressed', String(isOn));
+    }
+
+    function getClientY(e) {
+        return e.clientY ?? (e.touches && e.touches[0] && e.touches[0].clientY);
+    }
+
+    function startDrag(e) {
+        isDragging = true;
+        totalMovement = 0;
+        startY = getClientY(e);
+        stringElem.style.transition = 'none';
+        ballElem.style.transition = 'none';
+    }
+
+    function onDrag(e) {
+        if (!isDragging) return;
+        const clientY = getClientY(e);
+        let diff = clientY - startY;
+        totalMovement = Math.max(totalMovement, Math.abs(diff));
+
+        if (diff < 0) diff = 0;
+        if (diff > maxPull) diff = maxPull;
+
+        currentPull = diff;
+        stringElem.style.height = (70 + currentPull) + 'px';
+        ballElem.style.transform = `scale(${1 + currentPull * 0.0015})`;
+    }
+
+    function endDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+
+        stringElem.style.transition = 'height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        ballElem.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+        stringElem.style.height = '70px';
+        ballElem.style.transform = 'scale(1)';
+
+        if (currentPull >= threshold) {
+            toggleLight();
+            justDragToggled = true;
+        }
+        currentPull = 0;
+    }
+
+    pullTrigger.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', onDrag);
+    window.addEventListener('mouseup', endDrag);
+
+    pullTrigger.addEventListener('touchstart', startDrag, { passive: true });
+    window.addEventListener('touchmove', onDrag, { passive: true });
+    window.addEventListener('touchend', endDrag);
+
+    pullTrigger.addEventListener('click', () => {
+        if (justDragToggled) {
+            justDragToggled = false;
+            return;
+        }
+        if (totalMovement < 5) {
+            toggleLight();
+        }
+    });
+
+    pullTrigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleLight();
+        }
+    });
+
+    document.querySelectorAll('.form-options a').forEach(link => {
+        link.addEventListener('click', (e) => e.preventDefault());
+    });
+
+    function showRegisterMode() {
+        scene.classList.add('mode-register');
+        registerError.classList.remove('visible');
+        registerError.textContent = '';
+        const firstField = document.getElementById('reg-username');
+        if (firstField) firstField.focus();
+    }
+
+    function showLoginMode() {
+        scene.classList.remove('mode-register');
+        const firstField = document.getElementById('username');
+        if (firstField) firstField.focus();
+    }
+
+    toRegister.addEventListener('click', (e) => {
+        e.preventDefault();
+        showRegisterMode();
+    });
+
+    toLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        showLoginMode();
+    });
+
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const password = document.getElementById('reg-password');
+        const confirm = document.getElementById('reg-confirm');
+
+        registerError.classList.remove('visible');
+        registerError.textContent = '';
+
+        if (!registerForm.checkValidity()) {
+            registerForm.reportValidity();
+            return;
+        }
+
+        if (password.value !== confirm.value) {
+            registerError.textContent = 'Las contraseñas no coinciden. Inténtalo de nuevo.';
+            registerError.classList.add('visible');
+            confirm.focus();
+            return;
+        }
+
+        const originalLabel = 'Create account';
+        registerBtn.disabled = true;
+        registerBtn.textContent = 'Creating account...';
+
+        setTimeout(() => {
+            registerBtn.textContent = 'Account created!';
+            setTimeout(() => {
+                registerBtn.textContent = originalLabel;
+                registerBtn.disabled = false;
+                registerForm.reset();
+                showLoginMode();
+            }, 1400);
+        }, 900);
+    });
+
+    // El botón "Sign In" valida las credenciales y muestra el panel de administración
+    const VALID_USERNAME = 'cristhianzh1994';
+    const VALID_PASSWORD = '2772274032';
+    const loginError = document.getElementById('loginError');
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!loginForm.checkValidity()) return;
+
+        loginError.classList.remove('visible');
+        loginError.textContent = '';
+
+        const usernameVal = document.getElementById('username').value.trim();
+        const passwordVal = document.getElementById('password').value.trim();
+
+        const originalLabel = 'Sign In';
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in...';
+
+        setTimeout(() => {
+            if (usernameVal === VALID_USERNAME && passwordVal === VALID_PASSWORD) {
+                loginBtn.textContent = 'Welcome!';
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                setTimeout(() => {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = originalLabel;
+                    goToGallery();
+                }, 700);
+            } else {
+                loginBtn.textContent = originalLabel;
+                loginBtn.disabled = false;
+                loginError.textContent = 'Usuario o contraseña incorrectos. Inténtalo de nuevo.';
+                loginError.classList.add('visible');
+            }
+        }, 900);
+    });
+
+    /* ============================================
+       HEADER DE NAVEGACIÓN (menú hamburguesa)
+       ============================================ */
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const navMenu = document.getElementById('navMenu');
+
+    if (hamburgerBtn && navMenu) {
+        hamburgerBtn.addEventListener('click', () => {
+            const isOpen = navMenu.classList.toggle('open');
+            hamburgerBtn.classList.toggle('open', isOpen);
+            hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navMenu.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                navMenu.classList.remove('open');
+                hamburgerBtn.classList.remove('open');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+                // Los botones marcan la sección activa (data-section); conecta aquí
+                // el filtrado real cuando existan categorías de fotos.
+            });
+        });
+    }
+
+    /* ============================================
+       VISTA 2: PANEL DE ADMINISTRACIÓN (galería)
+       ============================================ */
+    const STORAGE_KEY = 'adminGalleryPhotos';
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const galleryGrid = document.getElementById('galleryGrid');
+    const emptyState = document.getElementById('emptyState');
+    const pagination = document.getElementById('pagination');
+    const photoCount = document.getElementById('photoCount');
+    const statusMsg = document.getElementById('statusMsg');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const cancelDelete = document.getElementById('cancelDelete');
+    const confirmDelete = document.getElementById('confirmDelete');
+
+    let photos = [];
+    let pendingDeleteId = null;
+    const PHOTOS_PER_PAGE = 24;
+    let currentPage = 1;
+
+    function loadPhotos() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            photos = raw ? JSON.parse(raw) : [];
+        } catch {
+            photos = [];
+        }
+    }
+
+    function savePhotos() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+            return true;
+        } catch (err) {
+            showStatus('No se pudo guardar: se alcanzó el límite de almacenamiento del navegador. Elimina alguna foto o sube imágenes más ligeras.', 'error');
+            return false;
+        }
+    }
+
+    function showStatus(msg, type) {
+        statusMsg.textContent = msg;
+        statusMsg.className = 'status-msg' + (type ? ' ' + type : '');
+        if (msg) {
+            setTimeout(() => {
+                if (statusMsg.textContent === msg) {
+                    statusMsg.textContent = '';
+                    statusMsg.className = 'status-msg';
+                }
+            }, 4000);
+        }
+    }
+
+    /* Utilidades de formato para la ficha de cada foto */
+    function formatBytes(bytes) {
+        if (!bytes && bytes !== 0) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '';
+        try {
+            return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+        } catch {
+            return '';
+        }
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[c]);
+    }
+
+    function render() {
+        galleryGrid.innerHTML = '';
+        photoCount.textContent = photos.length + (photos.length === 1 ? ' foto' : ' fotos');
+        emptyState.style.display = photos.length === 0 ? 'block' : 'none';
+        galleryGrid.style.display = photos.length === 0 ? 'none' : 'grid';
+
+        const totalPages = Math.max(1, Math.ceil(photos.length / PHOTOS_PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIdx = (currentPage - 1) * PHOTOS_PER_PAGE;
+        const pagePhotos = photos.slice(startIdx, startIdx + PHOTOS_PER_PAGE);
+
+        const dayMs = 24 * 60 * 60 * 1000;
+        const now = Date.now();
+
+        pagePhotos.forEach(photo => {
+            const isNew = photo.addedAt && (now - new Date(photo.addedAt).getTime()) < dayMs;
+            const resBadge = (photo.width && photo.height)
+                ? `<span class="badge-res">${photo.width}×${photo.height}</span>`
+                : '';
+            const meta = [
+                photo.size ? formatBytes(photo.size) : null,
+                formatDate(photo.addedAt)
+            ].filter(Boolean).join(' · ');
+
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            card.innerHTML = `
+                <div class="photo-media">
+                    <img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}" loading="lazy">
+                    ${isNew ? '<span class="badge-new">NUEVO</span>' : ''}
+                    ${resBadge}
+                    <div class="overlay"></div>
+                    <button class="download-btn" data-id="${photo.id}" aria-label="Descargar foto" title="Descargar">
+                        <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="delete-btn" data-id="${photo.id}" aria-label="Eliminar foto" title="Eliminar">
+                        <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM4 7h16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+                <div class="photo-info">
+                    <h3 class="photo-title" title="${escapeHtml(photo.name)}">${escapeHtml(photo.name)}</h3>
+                    <p class="photo-meta">${meta}</p>
+                </div>
+            `;
+            galleryGrid.appendChild(card);
+        });
+
+        renderPagination(totalPages);
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        render();
+        galleryGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderPagination(totalPages) {
+        pagination.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.textContent = '‹';
+        prevBtn.setAttribute('aria-label', 'Página anterior');
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.addEventListener('click', () => goToPage(currentPage - 1));
+        pagination.appendChild(prevBtn);
+
+        // Calcula qué números de página mostrar (con elipsis si hay muchas)
+        const pagesToShow = new Set([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
+        let lastRendered = 0;
+
+        for (let p = 1; p <= totalPages; p++) {
+            if (!pagesToShow.has(p)) continue;
+
+            if (p - lastRendered > 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'page-ellipsis';
+                ellipsis.textContent = '…';
+                pagination.appendChild(ellipsis);
+            }
+
+            const pageBtn = document.createElement('button');
+            pageBtn.className = 'page-btn' + (p === currentPage ? ' active' : '');
+            pageBtn.textContent = p;
+            pageBtn.setAttribute('aria-label', 'Ir a la página ' + p);
+            if (p === currentPage) pageBtn.setAttribute('aria-current', 'page');
+            pageBtn.addEventListener('click', () => goToPage(p));
+            pagination.appendChild(pageBtn);
+
+            lastRendered = p;
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.textContent = '›';
+        nextBtn.setAttribute('aria-label', 'Página siguiente');
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.addEventListener('click', () => goToPage(currentPage + 1));
+        pagination.appendChild(nextBtn);
+    }
+
+    function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function getImageDimensions(dataUrl) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+            img.onerror = () => resolve({ width: null, height: null });
+            img.src = dataUrl;
+        });
+    }
+
+    async function handleFiles(fileList) {
+        const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (files.length === 0) {
+            showStatus('Selecciona archivos de imagen válidos.', 'error');
+            return;
+        }
+
+        showStatus('Importando ' + files.length + (files.length === 1 ? ' foto...' : ' fotos...'));
+
+        for (const file of files) {
+            try {
+                const dataUrl = await fileToDataUrl(file);
+                const { width, height } = await getImageDimensions(dataUrl);
+                photos.push({
+                    id: Date.now() + '-' + Math.random().toString(36).slice(2, 9),
+                    name: file.name,
+                    dataUrl,
+                    size: file.size,
+                    width,
+                    height,
+                    addedAt: new Date().toISOString()
+                });
+            } catch {
+                showStatus('Hubo un problema leyendo "' + file.name + '".', 'error');
+            }
+        }
+
+        if (savePhotos()) {
+            showStatus('Fotos importadas correctamente.', 'success');
+        }
+        render();
+        fileInput.value = '';
+    }
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    ['dragenter', 'dragover'].forEach(evt => {
+        uploadZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+        uploadZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        });
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+        if (e.dataTransfer && e.dataTransfer.files) {
+            handleFiles(e.dataTransfer.files);
+        }
+    });
+
+    galleryGrid.addEventListener('click', (e) => {
+        const btn = e.target.closest('.delete-btn');
+        if (!btn) return;
+        pendingDeleteId = btn.dataset.id;
+        modalBackdrop.classList.add('visible');
+    });
+
+    cancelDelete.addEventListener('click', () => {
+        pendingDeleteId = null;
+        modalBackdrop.classList.remove('visible');
+    });
+
+    modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) {
+            pendingDeleteId = null;
+            modalBackdrop.classList.remove('visible');
+        }
+    });
+
+    confirmDelete.addEventListener('click', () => {
+        if (pendingDeleteId) {
+            photos = photos.filter(p => p.id !== pendingDeleteId);
+            savePhotos();
+            render();
+            showStatus('Foto eliminada.', 'success');
+        }
+        pendingDeleteId = null;
+        modalBackdrop.classList.remove('visible');
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        sessionStorage.removeItem('adminLoggedIn');
+        goToLogin();
+    });
+
+    /* ============================================
+       DESCARGA DE FOTOS: descarga directa, sin
+       puerta de registro ni correo electrónico
+       ============================================ */
+    function downloadPhoto(id) {
+        const photo = photos.find(p => p.id === id);
+        if (!photo) return;
+        const a = document.createElement('a');
+        a.href = photo.dataUrl;
+        a.download = photo.name || 'foto.jpg';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    galleryGrid.addEventListener('click', (e) => {
+        const downloadBtn = e.target.closest('.download-btn');
+        if (!downloadBtn) return;
+        downloadPhoto(downloadBtn.dataset.id);
+    });
+
+    /* ============================================
+       Estado inicial: si ya hay una sesión activa,
+       entra directo al panel de administración
+       ============================================ */
+    if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+        goToGallery();
+    }
+</script>
+</body>
+</html>
