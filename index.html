@@ -1401,7 +1401,55 @@
 </div>
 </div>
 
-<script>
+<script type="module">
+    /* ============================================
+       FIREBASE: inicialización (Auth + Firestore)
+       ============================================ */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+        getFirestore,
+        collection,
+        addDoc,
+        deleteDoc,
+        doc,
+        onSnapshot,
+        query,
+        orderBy
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBP1Qh8af-_lqWWTRXp7uUSszXeM192bfU",
+        authDomain: "hotgallery-e0e98.firebaseapp.com",
+        projectId: "hotgallery-e0e98",
+        storageBucket: "hotgallery-e0e98.firebasestorage.app",
+        messagingSenderId: "977763925397",
+        appId: "1:977763925397:web:a316c2a26849e5dd6fca9c",
+        measurementId: "G-KHXZW523SR"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    try { getAnalytics(firebaseApp); } catch { /* Analytics puede fallar si el navegador bloquea trackers */ }
+    const auth = getAuth(firebaseApp);
+    const db = getFirestore(firebaseApp);
+
+    // El formulario de login solo pide username + contraseña, pero Firebase
+    // Auth (con el proveedor de email/contraseña) necesita un email. Se
+    // arma uno interno y determinístico a partir del username; el usuario
+    // nunca lo ve ni lo escribe.
+    const AUTH_EMAIL_DOMAIN = 'hotgallery-e0e98.app';
+    function usernameToEmail(username) {
+        const clean = username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '');
+        return clean + '@' + AUTH_EMAIL_DOMAIN;
+    }
+
     const body = document.body;
 
     /* ============================================
@@ -1445,8 +1493,7 @@
     function goToGallery() {
         body.classList.remove('view-login', 'light-on');
         body.classList.add('view-gallery');
-        loadPhotos();
-        render();
+        startPhotosListener();
     }
 
     function goToLogin() {
@@ -1579,9 +1626,10 @@
         showLoginMode();
     });
 
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const usernameField = document.getElementById('reg-username');
         const password = document.getElementById('reg-password');
         const confirm = document.getElementById('reg-confirm');
 
@@ -1604,7 +1652,8 @@
         registerBtn.disabled = true;
         registerBtn.textContent = 'Creating account...';
 
-        setTimeout(() => {
+        try {
+            await createUserWithEmailAndPassword(auth, usernameToEmail(usernameField.value), password.value);
             registerBtn.textContent = 'Account created!';
             setTimeout(() => {
                 registerBtn.textContent = originalLabel;
@@ -1612,15 +1661,23 @@
                 registerForm.reset();
                 showLoginMode();
             }, 1400);
-        }, 900);
+        } catch (err) {
+            registerBtn.textContent = originalLabel;
+            registerBtn.disabled = false;
+            if (err.code === 'auth/email-already-in-use') {
+                registerError.textContent = 'Ese nombre de usuario ya está en uso.';
+            } else if (err.code === 'auth/weak-password') {
+                registerError.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+            } else {
+                registerError.textContent = 'No se pudo crear la cuenta: ' + err.message;
+            }
+            registerError.classList.add('visible');
+        }
     });
 
-    // El botón "Sign In" valida las credenciales y muestra el panel de administración
-    const VALID_USERNAME = 'cristhianzh1994';
-    const VALID_PASSWORD = '2772274032';
     const loginError = document.getElementById('loginError');
 
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!loginForm.checkValidity()) return;
 
@@ -1634,22 +1691,20 @@
         loginBtn.disabled = true;
         loginBtn.textContent = 'Signing in...';
 
-        setTimeout(() => {
-            if (usernameVal === VALID_USERNAME && passwordVal === VALID_PASSWORD) {
-                loginBtn.textContent = 'Welcome!';
-                sessionStorage.setItem('adminLoggedIn', 'true');
-                setTimeout(() => {
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = originalLabel;
-                    goToGallery();
-                }, 700);
-            } else {
-                loginBtn.textContent = originalLabel;
+        try {
+            await signInWithEmailAndPassword(auth, usernameToEmail(usernameVal), passwordVal);
+            loginBtn.textContent = 'Welcome!';
+            setTimeout(() => {
                 loginBtn.disabled = false;
-                loginError.textContent = 'Usuario o contraseña incorrectos. Inténtalo de nuevo.';
-                loginError.classList.add('visible');
-            }
-        }, 900);
+                loginBtn.textContent = originalLabel;
+                goToGallery();
+            }, 700);
+        } catch (err) {
+            loginBtn.textContent = originalLabel;
+            loginBtn.disabled = false;
+            loginError.textContent = 'Usuario o contraseña incorrectos. Inténtalo de nuevo.';
+            loginError.classList.add('visible');
+        }
     });
 
     /* ============================================
@@ -1682,7 +1737,6 @@
     /* ============================================
        VISTA 2: PANEL DE ADMINISTRACIÓN (galería)
        ============================================ */
-    const STORAGE_KEY = 'adminGalleryPhotos';
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
     const galleryGrid = document.getElementById('galleryGrid');
@@ -1700,23 +1754,18 @@
     const PHOTOS_PER_PAGE = 24;
     let currentPage = 1;
 
-    function loadPhotos() {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            photos = raw ? JSON.parse(raw) : [];
-        } catch {
-            photos = [];
-        }
-    }
+    // Colección de Firestore donde viven las fotos (guardadas como base64 en dataUrl)
+    let unsubscribePhotos = null;
 
-    function savePhotos() {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
-            return true;
-        } catch (err) {
-            showStatus('No se pudo guardar: se alcanzó el límite de almacenamiento del navegador. Elimina alguna foto o sube imágenes más ligeras.', 'error');
-            return false;
-        }
+    function startPhotosListener() {
+        if (unsubscribePhotos) return; // ya está escuchando, no duplicar
+        const photosQuery = query(collection(db, 'photos'), orderBy('addedAt', 'desc'));
+        unsubscribePhotos = onSnapshot(photosQuery, (snapshot) => {
+            photos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            render();
+        }, (err) => {
+            showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
+        });
     }
 
     function showStatus(msg, type) {
@@ -1886,28 +1935,38 @@
 
         showStatus('Importando ' + files.length + (files.length === 1 ? ' foto...' : ' fotos...'));
 
+        let imported = 0;
         for (const file of files) {
             try {
                 const dataUrl = await fileToDataUrl(file);
+
+                // Firestore limita cada documento a ~1MB, y el base64 pesa
+                // ~33% más que el archivo original: se descartan las fotos
+                // que no entrarían para evitar que falle el guardado.
+                if (dataUrl.length > 900000) {
+                    showStatus('"' + file.name + '" pesa demasiado para guardarse en Firestore como base64 (máx. ~650KB). Comprímela e inténtalo de nuevo.', 'error');
+                    continue;
+                }
+
                 const { width, height } = await getImageDimensions(dataUrl);
-                photos.push({
-                    id: Date.now() + '-' + Math.random().toString(36).slice(2, 9),
+                await addDoc(collection(db, 'photos'), {
                     name: file.name,
                     dataUrl,
                     size: file.size,
                     width,
                     height,
-                    addedAt: new Date().toISOString()
+                    addedAt: new Date().toISOString(),
+                    ownerUid: auth.currentUser ? auth.currentUser.uid : null
                 });
-            } catch {
-                showStatus('Hubo un problema leyendo "' + file.name + '".', 'error');
+                imported++;
+            } catch (err) {
+                showStatus('Hubo un problema subiendo "' + file.name + '": ' + err.message, 'error');
             }
         }
 
-        if (savePhotos()) {
+        if (imported > 0) {
             showStatus('Fotos importadas correctamente.', 'success');
         }
-        render();
         fileInput.value = '';
     }
 
@@ -1953,19 +2012,21 @@
         }
     });
 
-    confirmDelete.addEventListener('click', () => {
+    confirmDelete.addEventListener('click', async () => {
         if (pendingDeleteId) {
-            photos = photos.filter(p => p.id !== pendingDeleteId);
-            savePhotos();
-            render();
-            showStatus('Foto eliminada.', 'success');
+            try {
+                await deleteDoc(doc(db, 'photos', pendingDeleteId));
+                showStatus('Foto eliminada.', 'success');
+            } catch (err) {
+                showStatus('No se pudo eliminar: ' + err.message, 'error');
+            }
         }
         pendingDeleteId = null;
         modalBackdrop.classList.remove('visible');
     });
 
-    logoutBtn.addEventListener('click', () => {
-        sessionStorage.removeItem('adminLoggedIn');
+    logoutBtn.addEventListener('click', async () => {
+        await signOut(auth);
         goToLogin();
     });
 
@@ -1991,12 +2052,16 @@
     });
 
     /* ============================================
-       Estado inicial: si ya hay una sesión activa,
-       entra directo al panel de administración
+       Estado inicial: Firebase Auth avisa si ya hay
+       una sesión activa (persiste entre recargas)
        ============================================ */
-    if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-        goToGallery();
-    }
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            goToGallery();
+        } else if (body.classList.contains('view-gallery')) {
+            goToLogin();
+        }
+    });
 </script>
 </body>
 </html>
