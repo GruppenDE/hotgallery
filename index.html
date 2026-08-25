@@ -884,6 +884,8 @@
 
     .upload-zone input[type="file"] { display: none; }
 
+    .hidden { display: none !important; }
+
     .status-msg {
         text-align: center;
         font-size: 0.8rem;
@@ -1342,15 +1344,15 @@
 <div class="wrap">
     <header>
         <div>
-            <span class="brand-eyebrow">
+            <span class="brand-eyebrow" id="pageEyebrow">
                 <span class="admin-star" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1L12 1.5z"/></svg>
                 </span>
-                Panel de administración
+                <span id="pageEyebrowText">Panel de administración</span>
             </span>
-            <h1>Mi galería</h1>
-            <p>Sube y organiza las fotos de tu web, cristhianzh1994</p>
-            <span class="admin-badge" title="Cuenta con permisos de administrador">
+            <h1 id="pageTitle">Mi galería</h1>
+            <p id="pageSubtitle">Sube y organiza las fotos de tu web, cristhianzh1994</p>
+            <span class="admin-badge" id="adminBadge" title="Cuenta con permisos de administrador">
                 <span class="admin-star" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1L12 1.5z"/></svg>
                 </span>
@@ -1377,7 +1379,7 @@
     <p class="status-msg" id="statusMsg"></p>
 
     <div class="gallery-header">
-        <h2>Tus fotos</h2>
+        <h2 id="photosHeading">Tus fotos</h2>
         <span id="photoCount">0 fotos</span>
     </div>
 
@@ -1450,6 +1452,12 @@
         return clean + '@' + AUTH_EMAIL_DOMAIN;
     }
 
+    // Único usuario con permisos de administrador (subir/borrar fotos).
+    // Cualquier otra cuenta que se registre es solo visitante de la galería.
+    const ADMIN_USERNAME = 'cristhianzh1994';
+    const ADMIN_EMAIL = usernameToEmail(ADMIN_USERNAME);
+    let isAdmin = false;
+
     const body = document.body;
 
     /* ============================================
@@ -1493,12 +1501,42 @@
     function goToGallery() {
         body.classList.remove('view-login', 'light-on');
         body.classList.add('view-gallery');
+        applyRoleUI();
         startPhotosListener();
     }
 
     function goToLogin() {
         body.classList.remove('view-gallery');
         body.classList.add('view-login');
+    }
+
+    // Ajusta el panel según el rol: solo ADMIN_USERNAME ve controles de
+    // subida/borrado; cualquier otra cuenta registrada solo ve la galería.
+    function applyRoleUI() {
+        const uploadZoneEl = document.getElementById('uploadZone');
+        const adminBadgeEl = document.getElementById('adminBadge');
+        const eyebrowText = document.getElementById('pageEyebrowText');
+        const titleEl = document.getElementById('pageTitle');
+        const subtitleEl = document.getElementById('pageSubtitle');
+        const headingEl = document.getElementById('photosHeading');
+
+        if (uploadZoneEl) uploadZoneEl.classList.toggle('hidden', !isAdmin);
+        if (adminBadgeEl) adminBadgeEl.classList.toggle('hidden', !isAdmin);
+
+        if (isAdmin) {
+            if (eyebrowText) eyebrowText.textContent = 'Panel de administración';
+            if (titleEl) titleEl.textContent = 'Mi galería';
+            if (subtitleEl) subtitleEl.textContent = 'Sube y organiza las fotos de tu web, ' + ADMIN_USERNAME;
+            if (headingEl) headingEl.textContent = 'Tus fotos';
+        } else {
+            if (eyebrowText) eyebrowText.textContent = 'Galería';
+            if (titleEl) titleEl.textContent = 'Galería';
+            if (subtitleEl) subtitleEl.textContent = 'Explora y descarga las fotos disponibles.';
+            if (headingEl) headingEl.textContent = 'Fotos disponibles';
+        }
+
+        // Vuelve a pintar las fotos para mostrar/ocultar el botón de eliminar
+        if (typeof render === 'function' && typeof photos !== 'undefined') render();
     }
 
     /* ============================================
@@ -1841,9 +1879,10 @@
                     <button class="download-btn" data-id="${photo.id}" aria-label="Descargar foto" title="Descargar">
                         <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
+                    ${isAdmin ? `
                     <button class="delete-btn" data-id="${photo.id}" aria-label="Eliminar foto" title="Eliminar">
                         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM4 7h16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
+                    </button>` : ''}
                 </div>
                 <div class="photo-info">
                     <h3 class="photo-title" title="${escapeHtml(photo.name)}">${escapeHtml(photo.name)}</h3>
@@ -2057,9 +2096,11 @@
        ============================================ */
     onAuthStateChanged(auth, (user) => {
         if (user) {
+            isAdmin = user.email === ADMIN_EMAIL;
             goToGallery();
-        } else if (body.classList.contains('view-gallery')) {
-            goToLogin();
+        } else {
+            isAdmin = false;
+            if (body.classList.contains('view-gallery')) goToLogin();
         }
     });
 </script>
