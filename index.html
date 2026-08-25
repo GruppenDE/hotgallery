@@ -1497,6 +1497,36 @@
     .chat-msg-link { color: var(--accent-strong); text-decoration: underline; word-break: break-all; }
     .chat-msg-link:hover { color: var(--accent); }
 
+    .chat-attach-preview {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-top: 1px solid var(--panel-border);
+        flex-shrink: 0;
+    }
+
+    .chat-attach-preview.hidden { display: none; }
+
+    .chat-attach-preview img {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--field-border);
+    }
+
+    .chat-attach-preview-remove {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: none;
+        background: var(--field);
+        color: var(--ink);
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+
     .chat-input-row {
         display: flex;
         align-items: center;
@@ -2498,13 +2528,17 @@
         <div class="chat-messages" id="chatMessages">
             <p class="chat-empty">Escribe tu primer mensaje…</p>
         </div>
+        <div class="chat-attach-preview hidden" id="chatAttachPreview">
+            <img id="chatAttachPreviewImg" alt="Imagen a enviar">
+            <button type="button" class="chat-attach-preview-remove" id="chatAttachPreviewRemove" aria-label="Quitar imagen">✕</button>
+        </div>
         <form class="chat-input-row" id="chatForm">
-            <label class="chat-attach-btn" for="chatImageInput" title="Adjuntar imagen">
+            <button type="button" class="chat-attach-btn" id="chatAttachBtn" title="Adjuntar imagen">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                 </svg>
-            </label>
-            <input type="file" id="chatImageInput" accept="image/*" hidden>
+            </button>
+            <input type="file" id="chatImageInput" accept="image/*" style="display:none">
             <input type="text" id="chatTextInput" placeholder="Escribe un mensaje..." autocomplete="off" maxlength="500">
             <button type="submit" class="chat-send-btn">Enviar</button>
         </form>
@@ -2896,7 +2930,46 @@
     const chatForm = document.getElementById('chatForm');
     const chatTextInput = document.getElementById('chatTextInput');
     const chatImageInput = document.getElementById('chatImageInput');
+    const chatAttachBtn = document.getElementById('chatAttachBtn');
+    const chatAttachPreview = document.getElementById('chatAttachPreview');
+    const chatAttachPreviewImg = document.getElementById('chatAttachPreviewImg');
+    const chatAttachPreviewRemove = document.getElementById('chatAttachPreviewRemove');
     const CHAT_MAX_IMAGE_DATAURL_LENGTH = 900000; // margen de seguridad (~límite de 1MB por documento en Firestore)
+
+    // El botón de adjuntar dispara el selector de archivo por JavaScript
+    // (en vez de depender de un <label for>), que es el método que ya
+    // funciona de forma confiable en el resto del sitio: en varios
+    // navegadores móviles (Safari/iOS, algunos WebView de Android) el
+    // click de un <label> sobre un input[type=file] oculto con "hidden"
+    // no siempre abre el selector de fotos.
+    if (chatAttachBtn && chatImageInput) {
+        chatAttachBtn.addEventListener('click', () => chatImageInput.click());
+    }
+
+    // Vista previa de la imagen elegida, para que el usuario vea que sí
+    // se seleccionó correctamente antes de enviarla (y pueda quitarla).
+    if (chatImageInput) {
+        chatImageInput.addEventListener('change', () => {
+            const file = chatImageInput.files[0];
+            if (!file) {
+                if (chatAttachPreview) chatAttachPreview.classList.add('hidden');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                if (chatAttachPreviewImg) chatAttachPreviewImg.src = reader.result;
+                if (chatAttachPreview) chatAttachPreview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (chatAttachPreviewRemove) {
+        chatAttachPreviewRemove.addEventListener('click', () => {
+            if (chatImageInput) chatImageInput.value = '';
+            if (chatAttachPreview) chatAttachPreview.classList.add('hidden');
+        });
+    }
 
     let chatCurrentUid = null;
     let chatIsAdminView = false;
@@ -3140,6 +3213,7 @@
 
             chatTextInput.value = '';
             chatImageInput.value = '';
+            if (chatAttachPreview) chatAttachPreview.classList.add('hidden');
             await sendChatMessage({ text, imageDataUrl });
         });
     }
