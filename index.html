@@ -945,13 +945,14 @@
         margin-top: 4px;
     }
 
+    .admin-panel-wrapper { margin-bottom: 34px; }
+
     /* Zona de carga */
     .upload-panel {
         background: linear-gradient(155deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008));
         border: 1px solid var(--panel-border);
         border-radius: 18px;
         padding: clamp(22px, 3vw, 28px);
-        margin-bottom: 34px;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
     }
@@ -1125,10 +1126,66 @@
         border: 1px solid var(--panel-border);
         border-radius: 14px;
         padding: 22px 24px;
-        margin-top: 18px;
     }
 
     .users-panel.hidden { display: none; }
+    .admin-tab-hidden { display: none !important; }
+
+    /* Barra de pestañas del panel de administrador: agrupa Importar,
+       Permisos y Mensajes en un solo bloque compacto en vez de tres
+       paneles largos apilados uno debajo del otro. */
+    .admin-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .admin-tab-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 18px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 999px;
+        color: var(--ink-muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .admin-tab-btn:hover {
+        color: var(--ink);
+        border-color: var(--accent-soft);
+    }
+
+    .admin-tab-btn.active {
+        color: #14110a;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        border-color: transparent;
+    }
+
+    .admin-tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: var(--danger);
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .admin-tab-badge.hidden { display: none; }
+
+    .admin-tabs + .upload-panel,
+    .admin-tabs + .users-panel { margin-top: 0; }
 
     .users-panel-head h3 {
         font-family: 'Fraunces', serif;
@@ -1297,6 +1354,15 @@
     }
 
     .chat-fab-badge.hidden { display: none; }
+
+    /* Aviso visual más notorio: la burbuja "respira" suavemente
+       mientras haya un mensaje del administrador sin leer. */
+    @keyframes chatFabPulse {
+        0%, 100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(226, 100, 95, 0.55); }
+        50% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 8px rgba(226, 100, 95, 0); }
+    }
+
+    .chat-fab.has-unread { animation: chatFabPulse 1.8s ease-out infinite; }
 
     .chat-backdrop {
         position: fixed;
@@ -2227,6 +2293,16 @@
         </div>
     </header>
 
+    <div class="admin-panel-wrapper hidden" id="adminPanelWrapper">
+        <div class="admin-tabs" id="adminTabs" role="tablist" aria-label="Panel de administración">
+            <button type="button" class="admin-tab-btn active" data-admin-tab="upload" role="tab" aria-selected="true">📤 Importar</button>
+            <button type="button" class="admin-tab-btn" data-admin-tab="users" role="tab" aria-selected="false">🔓 Permisos</button>
+            <button type="button" class="admin-tab-btn" data-admin-tab="chats" role="tab" aria-selected="false">
+                💬 Mensajes
+                <span class="admin-tab-badge hidden" id="adminChatsBadge">0</span>
+            </button>
+        </div>
+
     <div class="upload-panel" id="uploadPanel">
         <div class="upload-panel-head">
             <h3 id="uploadPanelTitle">Importar fotos</h3>
@@ -2287,7 +2363,7 @@
         </div>
     </div>
 
-    <div class="users-panel hidden" id="usersPanel">
+    <div class="users-panel admin-tab-hidden" id="usersPanel">
         <div class="users-panel-head">
             <h3>Permisos de descarga</h3>
             <p>Los usuarios no pueden descargar nada hasta que actives su permiso aquí, incluso después de registrarse y pasar por Telegram.</p>
@@ -2297,7 +2373,7 @@
         </div>
     </div>
 
-    <div class="users-panel hidden" id="chatsPanel">
+    <div class="users-panel admin-tab-hidden" id="chatsPanel">
         <div class="users-panel-head">
             <h3>Mensajes de usuarios</h3>
             <p>Conversaciones privadas con cada usuario. Puedes autorizar descargas directamente desde el chat.</p>
@@ -2305,6 +2381,7 @@
         <div class="users-list" id="chatsList">
             <p class="users-empty" id="chatsEmpty">Cargando conversaciones…</p>
         </div>
+    </div>
     </div>
 
     <p class="status-msg" id="statusMsg"></p>
@@ -2648,19 +2725,15 @@
     // Ajusta el panel según el rol: solo ADMIN_USERNAME ve controles de
     // subida/borrado; cualquier otra cuenta registrada solo ve la galería.
     function applyRoleUI() {
-        const uploadPanelEl = document.getElementById('uploadPanel');
+        const adminPanelWrapperEl = document.getElementById('adminPanelWrapper');
         const adminBadgeEl = document.getElementById('adminBadge');
         const eyebrowText = document.getElementById('pageEyebrowText');
         const titleEl = document.getElementById('pageTitle');
         const subtitleEl = document.getElementById('pageSubtitle');
         const headingEl = document.getElementById('photosHeading');
 
-        if (uploadPanelEl) uploadPanelEl.classList.toggle('hidden', !isAdmin);
+        if (adminPanelWrapperEl) adminPanelWrapperEl.classList.toggle('hidden', !isAdmin);
         if (adminBadgeEl) adminBadgeEl.classList.toggle('hidden', !isAdmin);
-        const usersPanelEl = document.getElementById('usersPanel');
-        if (usersPanelEl) usersPanelEl.classList.toggle('hidden', !isAdmin);
-        const chatsPanelEl = document.getElementById('chatsPanel');
-        if (chatsPanelEl) chatsPanelEl.classList.toggle('hidden', !isAdmin);
         if (chatFab) chatFab.classList.toggle('hidden', !auth.currentUser || isAdmin);
 
         const meta = SECTION_META[currentSection] || SECTION_META.inicio;
@@ -2732,6 +2805,19 @@
                 showStatus('¡Tu descarga fue aprobada! Descargando…', 'success');
             }
         }, () => { /* Silencioso: si falla, simplemente no se autodescarga */ });
+    }
+
+    // Escucha en tiempo real el propio hilo de chat del usuario para
+    // encender el punto rojo en la burbuja flotante cuando el
+    // administrador le manda un mensaje nuevo que todavía no ha leído.
+    let chatFabUnreadUnsub = null;
+    function subscribeToChatFabUnread(uid) {
+        if (chatFabUnreadUnsub) { chatFabUnreadUnsub(); chatFabUnreadUnsub = null; }
+        chatFabUnreadUnsub = onSnapshot(doc(db, 'chats', uid), (snap) => {
+            const hasUnread = !!(snap.exists() && snap.data().unreadByUser);
+            if (chatFabBadge) chatFabBadge.classList.toggle('hidden', !hasUnread);
+            if (chatFab) chatFab.classList.toggle('has-unread', hasUnread);
+        }, () => { /* Silencioso: si falla, simplemente no se muestra el aviso */ });
     }
 
     // Panel de administrador: lista de todos los usuarios registrados
@@ -3070,7 +3156,9 @@
     function subscribeToChatsList() {
         if (chatsListUnsub) { chatsListUnsub(); chatsListUnsub = null; }
         chatsListUnsub = onSnapshot(collection(db, 'chats'), (snap) => {
-            renderChatsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            const chats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderChatsList(chats);
+            updateAdminChatsBadge(chats);
         }, (err) => {
             const el = document.getElementById('chatsList');
             if (el) el.innerHTML = '<p class="users-empty">No se pudieron cargar los chats: ' + escapeHtml(err.message) + '</p>';
@@ -3393,6 +3481,43 @@
     const bulkDeleteConfirm = document.getElementById('bulkDeleteConfirm');
     const uploadCategoryTabs = document.getElementById('uploadCategoryTabs');
     const uploadTargetLabel = document.getElementById('uploadTargetLabel');
+
+    // Pestañas del panel de administrador: Importar / Permisos / Mensajes,
+    // agrupadas en un solo bloque compacto en vez de tres paneles apilados.
+    const adminTabs = document.getElementById('adminTabs');
+    const adminPanels = {
+        upload: document.getElementById('uploadPanel'),
+        users: document.getElementById('usersPanel'),
+        chats: document.getElementById('chatsPanel')
+    };
+    const adminChatsBadge = document.getElementById('adminChatsBadge');
+
+    function setActiveAdminTab(tab) {
+        if (!adminTabs) return;
+        adminTabs.querySelectorAll('.admin-tab-btn').forEach(b => {
+            const active = b.dataset.adminTab === tab;
+            b.classList.toggle('active', active);
+            b.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        Object.entries(adminPanels).forEach(([key, el]) => {
+            if (el) el.classList.toggle('admin-tab-hidden', key !== tab);
+        });
+    }
+
+    if (adminTabs) {
+        adminTabs.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => setActiveAdminTab(btn.dataset.adminTab || 'upload'));
+        });
+    }
+
+    // Actualiza el contador rojo en la pestaña "Mensajes" con la cantidad
+    // de conversaciones que el admin todavía no ha leído.
+    function updateAdminChatsBadge(chats) {
+        if (!adminChatsBadge) return;
+        const unreadCount = (chats || []).filter(c => c.unreadByAdmin).length;
+        adminChatsBadge.textContent = String(unreadCount);
+        adminChatsBadge.classList.toggle('hidden', unreadCount === 0);
+    }
 
     let uploadCategory = 'inicio';
 
@@ -4298,9 +4423,13 @@
             if (isAdmin) {
                 subscribeToUsersList();
                 subscribeToChatsList();
+                if (chatFabUnreadUnsub) { chatFabUnreadUnsub(); chatFabUnreadUnsub = null; }
+                if (chatFabBadge) chatFabBadge.classList.add('hidden');
+                if (chatFab) chatFab.classList.remove('has-unread');
             } else {
                 if (usersListUnsub) { usersListUnsub(); usersListUnsub = null; }
                 if (chatsListUnsub) { chatsListUnsub(); chatsListUnsub = null; }
+                subscribeToChatFabUnread(user.uid);
             }
         } else {
             isAdmin = false;
@@ -4310,6 +4439,9 @@
             if (currentUserDocUnsub) { currentUserDocUnsub(); currentUserDocUnsub = null; }
             if (usersListUnsub) { usersListUnsub(); usersListUnsub = null; }
             if (chatsListUnsub) { chatsListUnsub(); chatsListUnsub = null; }
+            if (chatFabUnreadUnsub) { chatFabUnreadUnsub(); chatFabUnreadUnsub = null; }
+            if (chatFabBadge) chatFabBadge.classList.add('hidden');
+            if (chatFab) chatFab.classList.remove('has-unread');
             if (body.classList.contains('view-gallery')) goToLogin();
         }
     });
