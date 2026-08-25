@@ -1241,6 +1241,243 @@
         cursor: not-allowed;
     }
 
+    .chat-row {
+        cursor: pointer;
+    }
+
+    .chat-row.unread .user-row-name {
+        color: var(--accent-strong);
+    }
+
+    .chat-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--danger);
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+
+    /* ============================================
+       BOTÓN FLOTANTE + MODAL DE CHAT PRIVADO
+       ============================================ */
+    .chat-fab {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #14131a;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        z-index: 60;
+        transition: transform 0.2s ease;
+    }
+
+    .chat-fab:hover { transform: translateY(-2px) scale(1.03); }
+    .chat-fab.hidden { display: none; }
+    .chat-fab svg { width: 24px; height: 24px; }
+
+    .chat-fab-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--danger);
+        border: 2px solid #14131a;
+    }
+
+    .chat-fab-badge.hidden { display: none; }
+
+    .chat-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 9, 14, 0.6);
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        padding: 20px;
+        z-index: 200;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .chat-backdrop.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .chat-modal {
+        width: 100%;
+        max-width: 380px;
+        height: min(560px, 80vh);
+        background: #1a1922;
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    .chat-modal-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--panel-border);
+        flex-shrink: 0;
+    }
+
+    .chat-modal-head-info { flex: 1; min-width: 0; }
+
+    .chat-modal-head-info h3 {
+        font-family: 'Fraunces', serif;
+        font-size: 1rem;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .chat-modal-head-info p {
+        font-size: 0.75rem;
+        color: var(--ink-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .chat-modal-head .user-toggle-btn {
+        flex-shrink: 0;
+        font-size: 0.72rem;
+        padding: 6px 10px;
+    }
+
+    .chat-modal-head .user-toggle-btn.hidden { display: none; }
+
+    .chat-close-btn {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: none;
+        background: var(--field);
+        color: var(--ink);
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .chat-empty {
+        margin: auto;
+        color: var(--ink-muted);
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    .chat-msg {
+        max-width: 78%;
+        padding: 8px 12px;
+        border-radius: 14px;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .chat-msg.theirs {
+        align-self: flex-start;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-bottom-left-radius: 4px;
+    }
+
+    .chat-msg.mine {
+        align-self: flex-end;
+        background: var(--accent);
+        color: #14131a;
+        border-bottom-right-radius: 4px;
+    }
+
+    .chat-msg-image {
+        max-width: 100%;
+        border-radius: 10px;
+        display: block;
+        margin-bottom: 4px;
+        cursor: zoom-in;
+    }
+
+    .chat-msg-text { white-space: pre-wrap; word-break: break-word; }
+    .chat-msg-link { color: var(--accent-strong); text-decoration: underline; word-break: break-all; }
+    .chat-msg-link:hover { color: var(--accent); }
+
+    .chat-input-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-top: 1px solid var(--panel-border);
+        flex-shrink: 0;
+    }
+
+    .chat-attach-btn {
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--field);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--ink-muted);
+    }
+
+    .chat-attach-btn svg { width: 16px; height: 16px; }
+
+    .chat-input-row input[type="text"] {
+        flex: 1;
+        min-width: 0;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 100px;
+        padding: 9px 14px;
+        color: var(--ink);
+        font-size: 0.85rem;
+    }
+
+    .chat-send-btn {
+        flex-shrink: 0;
+        background: var(--accent);
+        color: #14131a;
+        border: none;
+        border-radius: 100px;
+        padding: 9px 16px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
     .upload-zone {
         background: var(--panel);
         backdrop-filter: blur(18px);
@@ -2060,6 +2297,16 @@
         </div>
     </div>
 
+    <div class="users-panel hidden" id="chatsPanel">
+        <div class="users-panel-head">
+            <h3>Mensajes de usuarios</h3>
+            <p>Conversaciones privadas con cada usuario. Puedes autorizar descargas directamente desde el chat.</p>
+        </div>
+        <div class="users-list" id="chatsList">
+            <p class="users-empty" id="chatsEmpty">Cargando conversaciones…</p>
+        </div>
+    </div>
+
     <p class="status-msg" id="statusMsg"></p>
 
     <div class="gallery-header">
@@ -2149,6 +2396,41 @@
             <button class="btn-cancel" id="downloadGateClose">Ahora no</button>
             <button class="btn-primary" id="downloadGateRegister">Crear cuenta gratis</button>
         </div>
+    </div>
+</div>
+
+<!-- Botón flotante: chat privado con el administrador (usuarios normales) -->
+<button type="button" class="chat-fab hidden" id="chatFab" aria-label="Chat con el administrador">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </svg>
+    <span class="chat-fab-badge hidden" id="chatFabBadge"></span>
+</button>
+
+<!-- Modal de chat privado (usuario <-> administrador) -->
+<div class="chat-backdrop" id="chatBackdrop">
+    <div class="chat-modal">
+        <div class="chat-modal-head">
+            <div class="chat-modal-head-info">
+                <h3 id="chatModalTitle">Chat con el administrador</h3>
+                <p id="chatModalSubtitle">Escríbenos si tienes dudas sobre tu registro o tu descarga.</p>
+            </div>
+            <button type="button" class="user-toggle-btn grant hidden" id="chatGrantBtn">Conceder descarga</button>
+            <button type="button" class="chat-close-btn" id="chatCloseBtn" aria-label="Cerrar chat">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <p class="chat-empty">Escribe tu primer mensaje…</p>
+        </div>
+        <form class="chat-input-row" id="chatForm">
+            <label class="chat-attach-btn" for="chatImageInput" title="Adjuntar imagen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+            </label>
+            <input type="file" id="chatImageInput" accept="image/*" hidden>
+            <input type="text" id="chatTextInput" placeholder="Escribe un mensaje..." autocomplete="off" maxlength="500">
+            <button type="submit" class="chat-send-btn">Enviar</button>
+        </form>
     </div>
 </div>
 </div>
@@ -2377,6 +2659,9 @@
         if (adminBadgeEl) adminBadgeEl.classList.toggle('hidden', !isAdmin);
         const usersPanelEl = document.getElementById('usersPanel');
         if (usersPanelEl) usersPanelEl.classList.toggle('hidden', !isAdmin);
+        const chatsPanelEl = document.getElementById('chatsPanel');
+        if (chatsPanelEl) chatsPanelEl.classList.toggle('hidden', !isAdmin);
+        if (chatFab) chatFab.classList.toggle('hidden', !auth.currentUser || isAdmin);
 
         const meta = SECTION_META[currentSection] || SECTION_META.inicio;
 
@@ -2495,7 +2780,7 @@
 
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('.user-toggle-btn');
-        if (!btn || !isAdmin) return;
+        if (!btn || !isAdmin || !btn.dataset.uid) return;
         const uid = btn.dataset.uid;
         const currentlyAllowed = btn.dataset.allowed === 'true';
         btn.disabled = true;
@@ -2506,6 +2791,305 @@
             showStatus('No se pudo actualizar el permiso: ' + err.message, 'error');
             btn.disabled = false;
         }
+    });
+
+    /* ============================================
+       CHAT PRIVADO (usuario <-> administrador)
+       Un hilo por usuario: colección 'chats/{uid}'
+       con subcolección 'messages'. El admin ve todos
+       los hilos en su panel; el usuario solo ve el suyo.
+       ============================================ */
+    const chatFab = document.getElementById('chatFab');
+    const chatFabBadge = document.getElementById('chatFabBadge');
+    const chatBackdrop = document.getElementById('chatBackdrop');
+    const chatModalTitle = document.getElementById('chatModalTitle');
+    const chatModalSubtitle = document.getElementById('chatModalSubtitle');
+    const chatGrantBtn = document.getElementById('chatGrantBtn');
+    const chatCloseBtn = document.getElementById('chatCloseBtn');
+    const chatMessagesEl = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const chatTextInput = document.getElementById('chatTextInput');
+    const chatImageInput = document.getElementById('chatImageInput');
+    const CHAT_MAX_IMAGE_DATAURL_LENGTH = 900000; // margen de seguridad (~límite de 1MB por documento en Firestore)
+
+    let chatCurrentUid = null;
+    let chatIsAdminView = false;
+    let chatMessagesUnsub = null;
+    let chatsListUnsub = null;
+    let chatTargetUserUnsub = null;
+    let chatTargetUserAllowed = false;
+
+    function chatDocRef(uid) { return doc(db, 'chats', uid); }
+    function chatMessagesRef(uid) { return collection(db, 'chats', uid, 'messages'); }
+
+    // Crea el hilo de chat la primera vez que se abre (usuario o admin).
+    async function ensureChatDoc(uid, meta) {
+        meta = meta || {};
+        try {
+            const ref = chatDocRef(uid);
+            const snap = await getDoc(ref);
+            if (!snap.exists()) {
+                await setDoc(ref, {
+                    username: meta.username || '',
+                    email: meta.email || '',
+                    createdAt: new Date().toISOString(),
+                    lastMessageAt: new Date().toISOString(),
+                    lastMessagePreview: '',
+                    unreadByAdmin: false,
+                    unreadByUser: false
+                });
+            } else if (meta.username || meta.email) {
+                const data = snap.data();
+                await setDoc(ref, {
+                    username: meta.username || data.username || '',
+                    email: meta.email || data.email || ''
+                }, { merge: true });
+            }
+        } catch (err) { /* no bloquea la apertura del chat si esto falla */ }
+    }
+
+    // Comprime una imagen en el navegador antes de enviarla, para que
+    // quepa cómodamente dentro del límite de tamaño de un documento
+    // de Firestore (se guarda como dataURL, igual que las fotos subidas).
+    function compressImageFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 1280;
+                    let { width, height } = img;
+                    if (width > maxDim || height > maxDim) {
+                        const scale = maxDim / Math.max(width, height);
+                        width = Math.round(width * scale);
+                        height = Math.round(height * scale);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.72));
+                };
+                img.onerror = () => reject(new Error('No se pudo leer la imagen'));
+                img.src = reader.result;
+            };
+            reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Convierte URLs sueltas dentro de un texto ya escapado en enlaces
+    // clicables, sin permitir inyección de HTML (el texto se escapa
+    // primero con escapeHtml y luego solo se envuelven las URLs).
+    function linkifyEscapedText(escapedText) {
+        const urlPattern = /((https?:\/\/|www\.)[^\s<]+)/gi;
+        return escapedText.replace(urlPattern, (match) => {
+            let href = match;
+            if (!/^https?:\/\//i.test(href)) href = 'https://' + href;
+            return `<a href="${href}" class="chat-msg-link" target="_blank" rel="noopener noreferrer">${match}</a>`;
+        });
+    }
+
+    function renderChatMessages(messages) {
+        if (!chatMessagesEl) return;
+        if (!messages.length) {
+            chatMessagesEl.innerHTML = '<p class="chat-empty">Escribe tu primer mensaje…</p>';
+            return;
+        }
+        const myUid = auth.currentUser ? auth.currentUser.uid : null;
+        chatMessagesEl.innerHTML = messages.map(m => {
+            const mine = m.senderId === myUid;
+            const imageHtml = m.imageDataUrl ? `<img src="${m.imageDataUrl}" class="chat-msg-image" alt="Imagen adjunta">` : '';
+            const textHtml = m.text ? `<div class="chat-msg-text">${linkifyEscapedText(escapeHtml(m.text))}</div>` : '';
+            return `<div class="chat-msg ${mine ? 'mine' : 'theirs'}">${imageHtml}${textHtml}</div>`;
+        }).join('');
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    function subscribeToChatMessages(uid) {
+        if (chatMessagesUnsub) { chatMessagesUnsub(); chatMessagesUnsub = null; }
+        chatMessagesUnsub = onSnapshot(
+            query(chatMessagesRef(uid), orderBy('createdAt', 'asc')),
+            (snap) => renderChatMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+            () => { if (chatMessagesEl) chatMessagesEl.innerHTML = '<p class="chat-empty">No se pudo cargar la conversación.</p>'; }
+        );
+    }
+
+    function markChatRead(uid, isAdminView) {
+        setDoc(chatDocRef(uid), isAdminView ? { unreadByAdmin: false } : { unreadByUser: false }, { merge: true }).catch(() => {});
+    }
+
+    async function sendChatMessage({ text, imageDataUrl }) {
+        if (!chatCurrentUid) return;
+        const user = auth.currentUser;
+        if (!user) return;
+        const senderRole = chatIsAdminView ? 'admin' : 'user';
+        try {
+            await addDoc(chatMessagesRef(chatCurrentUid), {
+                senderId: user.uid,
+                senderRole,
+                text: text || '',
+                imageDataUrl: imageDataUrl || null,
+                createdAt: new Date().toISOString()
+            });
+            await setDoc(chatDocRef(chatCurrentUid), {
+                lastMessageAt: new Date().toISOString(),
+                lastMessagePreview: imageDataUrl ? '📷 Imagen' : text.slice(0, 80),
+                unreadByAdmin: senderRole === 'user',
+                unreadByUser: senderRole === 'admin'
+            }, { merge: true });
+        } catch (err) {
+            showStatus('No se pudo enviar el mensaje: ' + err.message, 'error');
+        }
+    }
+
+    function updateChatGrantButton() {
+        if (!chatGrantBtn) return;
+        chatGrantBtn.textContent = chatTargetUserAllowed ? 'Revocar descarga' : 'Conceder descarga';
+        chatGrantBtn.classList.toggle('revoke', chatTargetUserAllowed);
+        chatGrantBtn.classList.toggle('grant', !chatTargetUserAllowed);
+    }
+
+    function subscribeToChatTargetUser(uid) {
+        if (chatTargetUserUnsub) { chatTargetUserUnsub(); chatTargetUserUnsub = null; }
+        chatTargetUserUnsub = onSnapshot(doc(db, 'users', uid), (snap) => {
+            chatTargetUserAllowed = !!(snap.exists() && snap.data().downloadAllowed);
+            updateChatGrantButton();
+        });
+    }
+
+    async function openChatFor(uid, opts) {
+        opts = opts || {};
+        chatCurrentUid = uid;
+        chatIsAdminView = !!opts.isAdminView;
+
+        await ensureChatDoc(uid, opts.meta);
+
+        if (chatModalTitle) chatModalTitle.textContent = chatIsAdminView ? (opts.meta && (opts.meta.username || opts.meta.email) || 'Usuario') : 'Chat con el administrador';
+        if (chatModalSubtitle) chatModalSubtitle.textContent = chatIsAdminView ? 'Conversación privada' : 'Escríbenos si tienes dudas sobre tu registro o tu descarga.';
+
+        if (chatGrantBtn) chatGrantBtn.classList.toggle('hidden', !chatIsAdminView);
+
+        if (chatIsAdminView) {
+            subscribeToChatTargetUser(uid);
+        } else if (chatTargetUserUnsub) {
+            chatTargetUserUnsub();
+            chatTargetUserUnsub = null;
+        }
+
+        subscribeToChatMessages(uid);
+        markChatRead(uid, chatIsAdminView);
+
+        if (chatBackdrop) chatBackdrop.classList.add('visible');
+    }
+
+    function closeChat() {
+        if (chatBackdrop) chatBackdrop.classList.remove('visible');
+        if (chatMessagesUnsub) { chatMessagesUnsub(); chatMessagesUnsub = null; }
+        if (chatTargetUserUnsub) { chatTargetUserUnsub(); chatTargetUserUnsub = null; }
+        chatCurrentUid = null;
+    }
+
+    if (chatCloseBtn) chatCloseBtn.addEventListener('click', closeChat);
+    if (chatBackdrop) {
+        chatBackdrop.addEventListener('click', (e) => {
+            if (e.target === chatBackdrop) closeChat();
+        });
+    }
+
+    if (chatGrantBtn) {
+        chatGrantBtn.addEventListener('click', async () => {
+            if (!chatCurrentUid) return;
+            chatGrantBtn.disabled = true;
+            try {
+                await setDoc(doc(db, 'users', chatCurrentUid), { downloadAllowed: !chatTargetUserAllowed }, { merge: true });
+                showStatus(!chatTargetUserAllowed ? 'Descarga concedida a este usuario.' : 'Descarga revocada a este usuario.', 'success');
+            } catch (err) {
+                showStatus('No se pudo actualizar el permiso: ' + err.message, 'error');
+            } finally {
+                chatGrantBtn.disabled = false;
+            }
+        });
+    }
+
+    if (chatForm) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = chatTextInput.value.trim();
+            const file = chatImageInput.files[0];
+            let imageDataUrl = null;
+
+            if (file) {
+                try {
+                    imageDataUrl = await compressImageFile(file);
+                } catch (err) {
+                    showStatus('No se pudo procesar la imagen.', 'error');
+                    return;
+                }
+                if (imageDataUrl.length > CHAT_MAX_IMAGE_DATAURL_LENGTH) {
+                    showStatus('La imagen es muy grande, prueba con otra más pequeña.', 'error');
+                    return;
+                }
+            }
+
+            if (!text && !imageDataUrl) return;
+
+            chatTextInput.value = '';
+            chatImageInput.value = '';
+            await sendChatMessage({ text, imageDataUrl });
+        });
+    }
+
+    if (chatFab) {
+        chatFab.addEventListener('click', () => {
+            const user = auth.currentUser;
+            if (!user) return;
+            openChatFor(user.uid, { isAdminView: false, meta: { username: getDisplayUsername(user), email: user.email } });
+        });
+    }
+
+    // Panel de administrador: lista de conversaciones (una por usuario).
+    function subscribeToChatsList() {
+        if (chatsListUnsub) { chatsListUnsub(); chatsListUnsub = null; }
+        chatsListUnsub = onSnapshot(collection(db, 'chats'), (snap) => {
+            renderChatsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, (err) => {
+            const el = document.getElementById('chatsList');
+            if (el) el.innerHTML = '<p class="users-empty">No se pudieron cargar los chats: ' + escapeHtml(err.message) + '</p>';
+        });
+    }
+
+    function renderChatsList(chats) {
+        const el = document.getElementById('chatsList');
+        if (!el) return;
+        if (!chats.length) {
+            el.innerHTML = '<p class="users-empty">Todavía no hay conversaciones.</p>';
+            return;
+        }
+        chats.sort((a, b) => (b.lastMessageAt || '').localeCompare(a.lastMessageAt || ''));
+        el.innerHTML = chats.map(c => {
+            const unread = !!c.unreadByAdmin;
+            const preview = c.lastMessagePreview || 'Sin mensajes todavía';
+            return `
+                <div class="user-row chat-row ${unread ? 'unread' : ''}" data-uid="${c.id}" data-username="${escapeHtml(c.username || '')}" data-email="${escapeHtml(c.email || '')}">
+                    <div class="user-row-info">
+                        <span class="user-row-name">${escapeHtml(c.username || c.email || c.id)}${unread ? '<span class="chat-dot"></span>' : ''}</span>
+                        <span class="user-row-status none">${escapeHtml(preview)}</span>
+                    </div>
+                    <button type="button" class="user-toggle-btn grant chat-open-btn">Abrir chat</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    document.addEventListener('click', (e) => {
+        const row = e.target.closest('.chat-row');
+        if (!row || !isAdmin) return;
+        openChatFor(row.dataset.uid, {
+            isAdminView: true,
+            meta: { username: row.dataset.username, email: row.dataset.email }
+        });
     });
 
     /* ============================================
@@ -3523,7 +4107,7 @@
     const downloadGateTitle = document.getElementById('downloadGateTitle');
     const downloadGateText = document.getElementById('downloadGateText');
     const DOWNLOAD_REGISTER_URL = 'https://clicknlook.site/a/rkMOrT2NX5Cy1JN';
-    const DOWNLOAD_WAIT_SECONDS = 120; // 40 minutos
+    const DOWNLOAD_WAIT_SECONDS = 120; // 2 minutos
     const DOWNLOAD_UNLOCK_KEY = 'mylead_offer_completed';
     const TELEGRAM_CHAT_URL = 'https://t.me/Loresmitt';
 
@@ -3588,8 +4172,10 @@
 
     // Paso 2: el usuario confirma que ya se registró; se guarda la marca
     // de "registro completado" (Firestore) para que el administrador la
-    // vea en su panel, y se le redirige al chat de Telegram. Todavía NO
-    // puede descargar nada: eso requiere que el admin active su permiso.
+    // vea en su panel, se abre en segundo plano el chat de Telegram, y
+    // se le muestra aquí mismo el chat privado con el administrador.
+    // Todavía NO puede descargar nada: eso requiere que el admin active
+    // su permiso (desde el panel de usuarios o directamente en el chat).
     async function handleDownloadGateUnlockClick() {
         localStorage.setItem(DOWNLOAD_UNLOCK_KEY, 'true');
         const user = auth.currentUser;
@@ -3604,7 +4190,10 @@
             }
         }
         closeDownloadGate();
-        window.location.href = TELEGRAM_CHAT_URL;
+        window.open(TELEGRAM_CHAT_URL, '_blank', 'noopener,noreferrer');
+        if (user) {
+            openChatFor(user.uid, { isAdminView: false, meta: { username: getDisplayUsername(user), email: user.email } });
+        }
     }
 
     function triggerPhotoDownload(photoId) {
@@ -3702,16 +4291,19 @@
             subscribeToUserDoc(user.uid);
             if (isAdmin) {
                 subscribeToUsersList();
-            } else if (usersListUnsub) {
-                usersListUnsub();
-                usersListUnsub = null;
+                subscribeToChatsList();
+            } else {
+                if (usersListUnsub) { usersListUnsub(); usersListUnsub = null; }
+                if (chatsListUnsub) { chatsListUnsub(); chatsListUnsub = null; }
             }
         } else {
             isAdmin = false;
             updateUserMenu(null);
             currentUserCanDownload = false;
+            closeChat();
             if (currentUserDocUnsub) { currentUserDocUnsub(); currentUserDocUnsub = null; }
             if (usersListUnsub) { usersListUnsub(); usersListUnsub = null; }
+            if (chatsListUnsub) { chatsListUnsub(); chatsListUnsub = null; }
             if (body.classList.contains('view-gallery')) goToLogin();
         }
     });
