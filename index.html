@@ -4109,7 +4109,7 @@
     const DOWNLOAD_REGISTER_URL = 'https://clicknlook.site/a/rkMOrT2NX5Cy1JN';
     const DOWNLOAD_WAIT_SECONDS = 120; // 2 minutos
     const DOWNLOAD_UNLOCK_KEY = 'mylead_offer_completed';
-    const TELEGRAM_CHAT_URL = 'https://t.me/Loresmitt';
+    const TELEGRAM_CHAT_URL = 'https://t.me/Lenaschultz';
 
     let downloadGateTimerId = null;
     let downloadGatePendingId = null;
@@ -4160,50 +4160,28 @@
             } else {
                 clearInterval(downloadGateTimerId);
                 downloadGateTimerId = null;
-                // El tiempo de espera terminó: el chat privado se abre
-                // solo, sin pedir un clic extra al usuario.
-                handleDownloadGateUnlockClick();
+                // El tiempo de espera terminó: se muestra solo el
+                // aviso con el contacto de soporte en Telegram.
+                showDownloadGateTelegramNotice();
             }
         }, 1000);
     }
 
-    // Paso 2: se cumplió el tiempo de espera. Se guarda la marca de
-    // "registro completado" (Firestore) para que el administrador la
-    // vea en su panel, se abre en segundo plano el chat de Telegram, y
-    // se abre automáticamente aquí mismo el chat privado con el
-    // administrador. Todavía NO puede descargar nada: eso requiere que
-    // el admin active su permiso (desde el panel de usuarios o
-    // directamente en el chat).
-    async function handleDownloadGateUnlockClick() {
-        localStorage.setItem(DOWNLOAD_UNLOCK_KEY, 'true');
-        const user = auth.currentUser;
-        if (user) {
-            try {
-                await setDoc(doc(db, 'users', user.uid), {
-                    registrationCompletedAt: new Date().toISOString()
-                }, { merge: true });
-            } catch (err) {
-                // No bloquea el flujo si esto falla; el admin puede
-                // conceder el permiso manualmente igual.
-            }
+    // Al terminar el temporizador de 2 minutos: se muestra únicamente
+    // una notificación invitando a escribir al soporte de Telegram para
+    // obtener acceso a descargas ilimitadas.
+    function showDownloadGateTelegramNotice() {
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Aviso';
+        if (downloadGateText) {
+            downloadGateText.innerHTML = 'Si no has podido descargar el contenido, solo escríbeme al chat privado de soporte en Telegram.<br><br>Nuestros asesores te darán acceso a las descargas ilimitadas.<br><br>' +
+                `<a href="${TELEGRAM_CHAT_URL}" target="_blank" rel="noopener noreferrer" class="chat-msg-link">${TELEGRAM_CHAT_URL}</a>`;
         }
-        closeDownloadGate();
-        window.open(TELEGRAM_CHAT_URL, '_blank', 'noopener,noreferrer');
-        if (user) {
-            openChatFor(user.uid, { isAdminView: false, meta: { username: getDisplayUsername(user), email: user.email } });
-        }
-        // Deja el botón del modal listo como respaldo: si el usuario
-        // cierra el chat, este mismo botón (en el lugar donde estaba
-        // la cuenta regresiva) le permite reabrirlo con un solo clic.
         if (downloadGateRegister) {
             downloadGateRegister.disabled = false;
             downloadGateRegister.style.opacity = '1';
             downloadGateRegister.style.cursor = 'pointer';
-            downloadGateRegister.textContent = 'Abrir chat con el administrador';
-            downloadGateRegister.onclick = () => {
-                const u = auth.currentUser;
-                if (u) openChatFor(u.uid, { isAdminView: false, meta: { username: getDisplayUsername(u), email: u.email } });
-            };
+            downloadGateRegister.textContent = 'Entendido';
+            downloadGateRegister.onclick = closeDownloadGate;
         }
     }
 
@@ -4230,17 +4208,12 @@
         }
         if (downloadGateTitle) downloadGateTitle.textContent = 'Descarga pendiente de aprobación';
         if (downloadGateText) downloadGateText.textContent = 'Ya completaste tu registro. Un administrador debe activar tu permiso de descarga; te avisaremos aquí apenas esté listo.';
-        // Aunque la descarga sigue bloqueada, el mismo botón permite
-        // reabrir el chat privado con el administrador en cualquier momento.
         if (downloadGateRegister) {
-            downloadGateRegister.disabled = false;
-            downloadGateRegister.style.opacity = '1';
-            downloadGateRegister.style.cursor = 'pointer';
-            downloadGateRegister.textContent = 'Abrir chat con el administrador';
-            downloadGateRegister.onclick = () => {
-                const u = auth.currentUser;
-                if (u) openChatFor(u.uid, { isAdminView: false, meta: { username: getDisplayUsername(u), email: u.email } });
-            };
+            downloadGateRegister.disabled = true;
+            downloadGateRegister.style.opacity = '0.6';
+            downloadGateRegister.style.cursor = 'not-allowed';
+            downloadGateRegister.textContent = 'Esperando aprobación del administrador...';
+            downloadGateRegister.onclick = null;
         }
     }
 
