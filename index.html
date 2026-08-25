@@ -1025,6 +1025,75 @@
         font-weight: 700;
     }
 
+    .upload-mode-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .upload-mode-btn {
+        flex: 1;
+        padding: 9px 14px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 10px;
+        color: var(--ink-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .upload-mode-btn:hover { color: var(--ink); border-color: var(--accent-soft); }
+
+    .upload-mode-btn.active {
+        color: #14110a;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        border-color: transparent;
+    }
+
+    .upload-url-zone {
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 14px;
+        padding: 18px;
+    }
+
+    .upload-url-zone.hidden { display: none; }
+
+    .upload-url-zone label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 10px;
+    }
+
+    .upload-url-zone textarea {
+        width: 100%;
+        resize: vertical;
+        background: var(--field-strong, rgba(0, 0, 0, 0.25));
+        border: 1px solid var(--field-border);
+        border-radius: 10px;
+        color: var(--ink);
+        font-family: inherit;
+        font-size: 0.85rem;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    .upload-url-zone .btn-primary {
+        margin-top: 12px;
+        width: 100%;
+    }
+
+    .upload-url-hint {
+        margin-top: 12px;
+        font-size: 0.76rem;
+        color: var(--ink-muted);
+        line-height: 1.5;
+    }
+
     .upload-zone {
         background: var(--panel);
         backdrop-filter: blur(18px);
@@ -1784,6 +1853,11 @@
             </button>
         </div>
 
+        <div class="upload-mode-tabs" id="uploadModeTabs" role="tablist" aria-label="Forma de importar">
+            <button type="button" class="upload-mode-btn active" data-mode="file" role="tab" aria-selected="true">📁 Subir archivo</button>
+            <button type="button" class="upload-mode-btn" data-mode="url" role="tab" aria-selected="false">🔗 Pegar URL</button>
+        </div>
+
         <div class="upload-zone" id="uploadZone">
             <div class="icon" id="uploadZoneIcon">📷</div>
             <h3 id="uploadZoneTitle">Arrastra tus imágenes aquí</h3>
@@ -1794,6 +1868,13 @@
                 <span>WEBP</span>
             </div>
             <input type="file" id="fileInput" accept="image/*" multiple>
+        </div>
+
+        <div class="upload-url-zone hidden" id="uploadUrlZone">
+            <label for="urlInput" id="uploadUrlLabel">Pega una o varias URLs de imágenes (una por línea)</label>
+            <textarea id="urlInput" rows="5" placeholder="https://ejemplo.com/foto1.jpg&#10;https://ejemplo.com/foto2.jpg"></textarea>
+            <button type="button" class="btn-primary" id="urlImportBtn">Importar desde URL</button>
+            <p class="upload-url-hint">No se guarda ningún archivo pesado en la base de datos: solo el enlace. La imagen se carga directamente desde donde la alojes, así que asegúrate de que el enlace sea público y permanente.</p>
         </div>
 
         <p class="upload-target-hint">Se subirán a: <strong id="uploadTargetLabel">Inicio</strong></p>
@@ -2367,6 +2448,10 @@
        ============================================ */
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
+    const uploadModeTabs = document.getElementById('uploadModeTabs');
+    const uploadUrlZone = document.getElementById('uploadUrlZone');
+    const urlInput = document.getElementById('urlInput');
+    const urlImportBtn = document.getElementById('urlImportBtn');
     const galleryGrid = document.getElementById('galleryGrid');
     const emptyState = document.getElementById('emptyState');
     const pagination = document.getElementById('pagination');
@@ -2658,9 +2743,12 @@
             const card = document.createElement('div');
             card.className = 'photo-card';
             const catMeta = SECTION_META[photo.category] || SECTION_META.inicio;
+            // photo.url: enlace externo (import por URL, no pesa nada en Firestore).
+            // photo.dataUrl: fotos antiguas guardadas como base64.
+            const mediaSrc = photo.url || photo.dataUrl || '';
             const mediaTag = isVideo
-                ? `<video src="${photo.dataUrl}" muted loop playsinline preload="metadata" title="${escapeHtml(photo.name)}"></video>`
-                : `<img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}" loading="lazy">`;
+                ? `<video src="${mediaSrc}" muted loop playsinline preload="metadata" title="${escapeHtml(photo.name)}"></video>`
+                : `<img src="${mediaSrc}" alt="${escapeHtml(photo.name)}" loading="lazy">`;
             card.innerHTML = `
                 <div class="photo-media">
                     ${mediaTag}
@@ -2855,8 +2943,116 @@
         fileInput.value = '';
     }
 
+    function isLikelyUrl(str) {
+        try {
+            const u = new URL(str);
+            return u.protocol === 'http:' || u.protocol === 'https:';
+        } catch {
+            return false;
+        }
+    }
+
+    function nameFromUrl(url) {
+        try {
+            const path = new URL(url).pathname;
+            const last = path.split('/').filter(Boolean).pop();
+            return last ? decodeURIComponent(last) : url;
+        } catch {
+            return url;
+        }
+    }
+
+    // Importa fotos/videos a partir de URLs externas ya alojadas en otro
+    // sitio (imgur, un CDN propio, etc.). No se descarga ni se convierte
+    // nada a base64: el documento de Firestore solo guarda el enlace, así
+    // que pesa unos pocos bytes en vez de cientos de KB. Esto es lo que
+    // hace que la galería cargue rápido sin importar cuántas fotos tenga.
+    async function handleUrlImport(rawText) {
+        const isVideoUpload = uploadCategory === 'videos';
+        const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+        const urls = lines.filter(isLikelyUrl);
+        const invalidCount = lines.length - urls.length;
+
+        if (urls.length === 0) {
+            showStatus('Pega al menos una URL válida (que empiece con http:// o https://).', 'error');
+            return;
+        }
+        if (invalidCount > 0) {
+            showStatus(invalidCount + ' línea(s) no parecían una URL válida y se ignoraron.', 'error');
+        }
+
+        const label = (SECTION_META[uploadCategory] || SECTION_META.inicio).label;
+        showStatus('Importando ' + urls.length + (urls.length === 1 ? (isVideoUpload ? ' video...' : ' foto...') : (isVideoUpload ? ' videos...' : ' fotos...')) + ' en "' + label + '"');
+
+        let imported = 0;
+        for (const url of urls) {
+            try {
+                const docData = {
+                    name: nameFromUrl(url),
+                    url,
+                    type: isVideoUpload ? 'video' : 'image',
+                    category: uploadCategory,
+                    addedAt: new Date().toISOString(),
+                    ownerUid: auth.currentUser ? auth.currentUser.uid : null
+                };
+
+                // Intenta leer dimensiones/duración directamente de la URL
+                // (no requiere CORS: solo se piden metadatos, no los
+                // píxeles). Si el host bloquea el hotlinking o tarda
+                // demasiado, se sigue guardando la foto igual, solo sin
+                // esos datos extra.
+                if (isVideoUpload) {
+                    const { width, height, duration } = await getVideoMeta(url);
+                    docData.width = width;
+                    docData.height = height;
+                    docData.duration = duration;
+                } else {
+                    const { width, height } = await getImageDimensions(url);
+                    docData.width = width;
+                    docData.height = height;
+                }
+
+                await addDoc(collection(db, 'photos'), docData);
+                imported++;
+            } catch (err) {
+                showStatus('Hubo un problema importando "' + url + '": ' + err.message, 'error');
+            }
+        }
+
+        if (imported > 0) {
+            if (currentSection === uploadCategory) currentPage = 1;
+            invalidateSection(uploadCategory, true);
+            showStatus(imported + (imported === 1 ? (isVideoUpload ? ' video importado' : ' foto importada') : (isVideoUpload ? ' videos importados' : ' fotos importadas')) + ' correctamente.', 'success');
+        }
+        if (urlInput) urlInput.value = '';
+    }
+
     uploadZone.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    // Alterna entre "Subir archivo" (base64) y "Pegar URL" (enlace externo,
+    // sin peso extra en Firestore).
+    if (uploadModeTabs) {
+        uploadModeTabs.querySelectorAll('.upload-mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                uploadModeTabs.querySelectorAll('.upload-mode-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+                const mode = btn.dataset.mode || 'file';
+                if (uploadZone) uploadZone.classList.toggle('hidden', mode !== 'file');
+                if (uploadUrlZone) uploadUrlZone.classList.toggle('hidden', mode !== 'url');
+            });
+        });
+    }
+
+    if (urlImportBtn) {
+        urlImportBtn.addEventListener('click', () => {
+            if (urlInput) handleUrlImport(urlInput.value);
+        });
+    }
 
     ['dragenter', 'dragover'].forEach(evt => {
         uploadZone.addEventListener(evt, (e) => {
