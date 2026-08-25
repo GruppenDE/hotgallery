@@ -1900,12 +1900,7 @@
         doc,
         onSnapshot,
         query,
-        where,
-        orderBy,
-        limit,
-        startAfter,
-        getDocs,
-        getCountFromServer
+        where
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1984,7 +1979,7 @@
         body.classList.add('view-gallery');
         applyRoleUI();
         currentPage = 1;
-        loadSectionPage(currentSection, 1);
+        startSectionListener(currentSection);
     }
 
     function goToLogin() {
@@ -2355,7 +2350,7 @@
 
                 currentSection = link.dataset.section || 'inicio';
                 currentPage = 1;
-                loadSectionPage(currentSection, 1);
+                startSectionListener(currentSection);
                 applyRoleUI();
                 if (typeof render === 'function') render();
             });
@@ -2432,122 +2427,54 @@
     let currentPage = 1;
 
     // Colección de Firestore donde viven las fotos/videos (guardadas como
-    // base64 en dataUrl, hasta ~650KB cada una). Antes se descargaba TODA
-    // la sección de golpe (todas sus fotos completas) antes de mostrar
-    // nada, lo cual era lentísimo con conexiones móviles. Ahora se pide a
-    // Firestore solo la página visible (24 fotos) usando límites y
-    // cursores; cada página que ya se pidió se cachea en memoria, así que
-    // volver a una página ya vista es instantáneo.
-    const sectionState = {};   // { [section]: { pages: {n: photo[]}, cursors: {n: docSnap}, totalCount } }
+    // base64 en dataUrl). Se escucha en tiempo real SOLO la categoría que
+    // se está viendo, filtrando directamente por el campo "category" — así
+    // cada sección (inicio, videos, anime, premium, +18) solo recibe sus
+    // propias fotos, nunca las de otra. Esto NO requiere crear ningún
+    // índice compuesto en Firebase (es una sola condición "where"), así
+    // que funciona de inmediato para cualquier categoría, incluso las que
+    // nunca se usaron antes. Cada sección se cachea en memoria la primera
+    // vez que se abre, y al subir una foto nueva el listener la agrega
+    // sola, sin recargar nada manualmente.
+    const sectionListeners = {};   // { [section]: unsubscribeFn }
+    const sectionCache = {};       // { [section]: photo[] }
     let photosLoading = true;
-    let loadToken = 0;         // evita que una carga vieja "gane la carrera" a una nueva
 
-    function getSectionState(section) {
-        if (!sectionState[section]) sectionState[section] = { pages: {}, cursors: {}, totalCount: null };
-        return sectionState[section];
-    }
-
-    function invalidateSection(section) {
-        delete sectionState[section];
-    }
-
-    // Trae UNA página (24 documentos) desde Firestore, ordenada por fecha
-    // (más reciente primero), y la guarda en la caché de la sección.
-    async function fetchOnePage(section, state, page) {
-        if (state.pages[page]) return;
-        const cursor = page > 1 ? state.cursors[page - 1] : null;
-        const constraints = [
-            collection(db, 'photos'),
-            where('category', '==', section),
-            orderBy('addedAt', 'desc')
-        ];
-        if (cursor) constraints.push(startAfter(cursor));
-        constraints.push(limit(PHOTOS_PER_PAGE));
-        const snap = await getDocs(query(...constraints));
-        state.pages[page] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        if (snap.docs.length > 0) state.cursors[page] = snap.docs[snap.docs.length - 1];
-    }
-
-    // Alternativa de respaldo: si Firestore todavía no tiene el índice
-    // compuesto (categoría + fecha) necesario para paginar, se cae de
-    // nuevo a traer toda la sección de una vez (como antes) para que la
-    // galería nunca se quede rota, solo un poco más lenta hasta que el
-    // índice esté listo.
-    async function loadSectionFull(section) {
-        const snap = await getDocs(query(collection(db, 'photos'), where('category', '==', section)));
-        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        items.sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
-        const state = getSectionState(section);
-        state.totalCount = items.length;
-        state.pages = {};
-        state.cursors = {};
-        const totalPages = Math.max(1, Math.ceil(items.length / PHOTOS_PER_PAGE));
-        for (let p = 1; p <= totalPages; p++) {
-            state.pages[p] = items.slice((p - 1) * PHOTOS_PER_PAGE, p * PHOTOS_PER_PAGE);
-        }
-    }
-
-    async function loadSectionPage(section, page) {
-        const myToken = ++loadToken;
-        const state = getSectionState(section);
-
-        if (state.pages[page]) {
-            if (currentSection === section && currentPage === page) {
-                photos = state.pages[page];
-                photosLoading = false;
-                render();
-            }
+    function startSectionListener(section) {
+        if (sectionListeners[section]) {
+            // Ya hay un listener activo para esta categoría: solo se
+            // vuelve a pintar con lo que ya está en caché.
+            photos = sectionCache[section] || [];
+            photosLoading = false;
+            render();
             return;
         }
 
-        if (currentSection === section && currentPage === page) {
-            photosLoading = true;
-            photos = [];
-            render();
-        }
+        photosLoading = !sectionCache[section];
+        photos = sectionCache[section] || [];
+        render();
 
-        try {
-            if (state.totalCount == null) {
-                const countSnap = await getCountFromServer(query(collection(db, 'photos'), where('category', '==', section)));
-                state.totalCount = countSnap.data().count;
-            }
-            if (myToken !== loadToken) return;
-
-            // Si se salta directo a una página que nunca se pidió, hacen
-            // falta las páginas anteriores para tener el cursor correcto.
-            for (let p = 1; p < page; p++) {
-                if (!state.pages[p]) await fetchOnePage(section, state, p);
-                if (myToken !== loadToken) return;
-            }
-            await fetchOnePage(section, state, page);
-            if (myToken !== loadToken) return;
-
-            if (currentSection === section && currentPage === page) {
-                photos = state.pages[page] || [];
-                photosLoading = false;
+        // Filtra en el servidor por categoría (photo.category === section):
+        // cada sección solo puede recibir documentos cuyo campo "category"
+        // coincida exactamente con ella.
+        const sectionQuery = query(collection(db, 'photos'), where('category', '==', section));
+        sectionListeners[section] = onSnapshot(sectionQuery, (snapshot) => {
+            const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            items.sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+            sectionCache[section] = items;
+            photosLoading = false;
+            if (currentSection === section) {
+                photos = items;
                 render();
             }
-        } catch (err) {
-            if (myToken !== loadToken) return;
-            const needsIndex = /index/i.test(err && err.message || '');
-            if (needsIndex) {
-                console.warn('Falta crear un índice compuesto (category + addedAt) en Firestore. Revisa el enlace en el error de la consola para crearlo con un clic; mientras tanto la galería sigue funcionando, solo un poco más lenta.', err);
-                try {
-                    await loadSectionFull(section);
-                    if (myToken === loadToken && currentSection === section) {
-                        photos = state.pages[page] || state.pages[1] || [];
-                        photosLoading = false;
-                        render();
-                    }
-                    return;
-                } catch (err2) {
-                    err = err2;
-                }
-            }
+        }, (err) => {
             photosLoading = false;
-            showStatus('No se pudieron cargar las fotos desde Firebase: ' + (err && err.message ? err.message : ''), 'error');
-            render();
-        }
+            // El listener quedó roto: se elimina para poder reintentar al
+            // volver a entrar a la sección
+            delete sectionListeners[section];
+            showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
+            if (currentSection === section) render();
+        });
     }
 
     function showStatus(msg, type) {
@@ -2618,8 +2545,8 @@
             return;
         }
 
-        const state = getSectionState(currentSection);
-        const totalCount = state.totalCount || 0;
+        const sectionPhotos = photos;
+        const totalCount = sectionPhotos.length;
 
         photoCount.textContent = totalCount + (totalCount === 1 ? unitSingular : unitPlural);
 
@@ -2629,9 +2556,11 @@
         galleryGrid.style.display = totalCount === 0 ? 'none' : 'grid';
 
         const totalPages = Math.max(1, Math.ceil(totalCount / PHOTOS_PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
 
-        // Estas ya vienen paginadas desde Firestore (solo la página actual)
-        const pagePhotos = photos;
+        const startIdx = (currentPage - 1) * PHOTOS_PER_PAGE;
+        const pagePhotos = sectionPhotos.slice(startIdx, startIdx + PHOTOS_PER_PAGE);
 
         const dayMs = 24 * 60 * 60 * 1000;
         const now = Date.now();
@@ -2689,7 +2618,7 @@
 
     function goToPage(page) {
         currentPage = page;
-        loadSectionPage(currentSection, page);
+        render();
         galleryGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -2833,14 +2762,13 @@
         }
 
         if (imported > 0) {
-            // Se agregaron fotos nuevas: la caché de esa sección quedó
-            // desactualizada (cambian totales y cursores), así que se
-            // descarta y se recarga si es la sección que se está viendo.
-            invalidateSection(uploadCategory);
-            if (currentSection === uploadCategory) {
-                currentPage = 1;
-                loadSectionPage(uploadCategory, 1);
-            }
+            // No hace falta invalidar ni recargar nada: si ya hay un
+            // listener en tiempo real activo para esta categoría (por
+            // ejemplo, la estás viendo mientras subes), Firestore le avisa
+            // solo y la foto nueva aparece de inmediato. Si nunca se
+            // visitó esa sección, se cargará correctamente la próxima vez
+            // que se entre a ella.
+            if (currentSection === uploadCategory) currentPage = 1;
             showStatus(isVideoUpload ? 'Videos importados correctamente.' : 'Fotos importadas correctamente.', 'success');
         }
         fileInput.value = '';
@@ -2892,11 +2820,8 @@
         if (pendingDeleteId) {
             try {
                 await deleteDoc(doc(db, 'photos', pendingDeleteId));
-                // La foto eliminada pertenece a la sección visible: se
-                // descarta la caché de esa sección y se recarga la página
-                // actual para que el conteo y los cursores queden al día.
-                invalidateSection(currentSection);
-                loadSectionPage(currentSection, currentPage);
+                // El listener en tiempo real de esta sección detecta el
+                // borrado solo y actualiza la vista automáticamente.
                 showStatus('Foto eliminada.', 'success');
             } catch (err) {
                 showStatus('No se pudo eliminar: ' + err.message, 'error');
