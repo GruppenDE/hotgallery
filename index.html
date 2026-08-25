@@ -1356,25 +1356,12 @@
     .download-btn:hover { background: var(--accent-strong); transform: translateY(-1px); }
     .download-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; }
 
-    /* Ficha bajo la imagen, estilo título + metadatos de catálogo */
+    /* Ficha bajo la imagen, estilo metadatos de catálogo */
     .photo-info {
         padding: 10px 2px 0;
     }
 
-    .photo-title {
-        font-family: 'Fraunces', serif;
-        font-weight: 600;
-        font-size: 0.86rem;
-        color: var(--ink);
-        line-height: 1.3;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
     .photo-meta {
-        margin-top: 4px;
         font-size: 0.72rem;
         color: var(--ink-muted);
     }
@@ -2407,8 +2394,7 @@
         pagePhotos.forEach(photo => {
             const isNew = photo.addedAt && (now - new Date(photo.addedAt).getTime()) < dayMs;
             const meta = [
-                photo.size ? formatBytes(photo.size) : null,
-                formatDate(photo.addedAt)
+                photo.size ? formatBytes(photo.size) : null
             ].filter(Boolean).join(' · ');
 
             const card = document.createElement('div');
@@ -2429,10 +2415,10 @@
                         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM4 7h16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>` : ''}
                 </div>
+                ${(meta || isAdmin) ? `
                 <div class="photo-info">
-                    <h3 class="photo-title" title="${escapeHtml(photo.name)}">${escapeHtml(photo.name)}</h3>
-                    <p class="photo-meta">${meta}${isAdmin ? ' · ' + catMeta.label : ''}</p>
-                </div>
+                    <p class="photo-meta">${meta}${isAdmin ? (meta ? ' · ' : '') + catMeta.label : ''}</p>
+                </div>` : ''}
             `;
             galleryGrid.appendChild(card);
         });
