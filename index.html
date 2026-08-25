@@ -1340,21 +1340,6 @@
 
     .photo-card:hover .video-play-icon { opacity: 0; }
 
-    /* Esqueleto de carga: se muestra mientras Firestore entrega las
-       primeras fotos/videos de la sección activa */
-    .skeleton-media {
-        background: linear-gradient(100deg, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.03) 60%);
-        background-size: 250% 100%;
-        animation: skeletonShimmer 1.4s ease-in-out infinite;
-    }
-
-    @keyframes skeletonShimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -50% 0; }
-    }
-
-    .skeleton-card { pointer-events: none; }
-
     /* Insignia "nuevo", arriba a la izquierda (estilo logotipo de servicio) */
     .top-left-badges {
         position: absolute;
@@ -1457,24 +1442,6 @@
     }
 
     .empty-state .icon { font-size: 2.2rem; display: block; margin-bottom: 10px; opacity: 0.6; }
-
-    .retry-btn {
-        margin-top: 14px;
-        padding: 10px 22px;
-        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
-        color: #14110a;
-        border: none;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .retry-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 8px 20px rgba(203, 163, 90, 0.3);
-    }
 
     /* Paginación de la galería */
     .pagination {
@@ -1918,7 +1885,6 @@
         doc,
         onSnapshot,
         query,
-        where,
         orderBy
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -1997,7 +1963,7 @@
         body.classList.remove('view-login', 'light-on');
         body.classList.add('view-gallery');
         applyRoleUI();
-        startPhotosListener(currentSection);
+        startPhotosListener();
     }
 
     function goToLogin() {
@@ -2367,8 +2333,6 @@
                 hamburgerBtn.setAttribute('aria-expanded', 'false');
 
                 currentSection = link.dataset.section || 'inicio';
-                currentPage = 1;
-                startPhotosListener(currentSection);
                 applyRoleUI();
                 if (typeof render === 'function') render();
             });
@@ -2444,69 +2408,18 @@
     const PHOTOS_PER_PAGE = 24;
     let currentPage = 1;
 
-    // Colección de Firestore donde viven las fotos/videos (guardados como
-    // base64 en dataUrl). Se escucha SOLO la sección activa —en vez de toda
-    // la colección de golpe— para que la primera carga sea rápida; el
-    // resultado de cada sección se cachea en memoria al cambiar de pestaña.
-    const sectionListeners = {};   // { [section]: unsubscribeFn }
-    const sectionCache = {};       // { [section]: photo[] }
-    let photosLoading = true;
-    let photosLoadError = null;
-    let loadingTimeoutId = null;
+    // Colección de Firestore donde viven las fotos/videos (guardadas como base64 en dataUrl)
+    let unsubscribePhotos = null;
 
-    function startPhotosListener(section) {
-        if (sectionListeners[section]) {
-            // ya hay un listener activo para esta sección: solo re-renderiza
-            photos = sectionCache[section] || [];
-            photosLoading = false;
+    function startPhotosListener() {
+        if (unsubscribePhotos) return; // ya está escuchando, no duplicar
+        const photosQuery = query(collection(db, 'photos'), orderBy('addedAt', 'desc'));
+        unsubscribePhotos = onSnapshot(photosQuery, (snapshot) => {
+            photos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             render();
-            return;
-        }
-
-        photosLoading = !sectionCache[section];
-        photosLoadError = null;
-        photos = sectionCache[section] || [];
-        render();
-
-        // Salvaguarda: si Firestore no responde en 10s (red, permisos,
-        // índice faltante, etc.), deja de mostrar el esqueleto para
-        // siempre y ofrece un mensaje claro con botón de reintentar.
-        clearTimeout(loadingTimeoutId);
-        loadingTimeoutId = setTimeout(() => {
-            if (photosLoading && currentSection === section) {
-                photosLoading = false;
-                photosLoadError = 'La carga está tardando demasiado. Revisa tu conexión o los permisos de Firestore.';
-                render();
-            }
-        }, 10000);
-
-        const sectionQuery = query(collection(db, 'photos'), where('category', '==', section));
-        sectionListeners[section] = onSnapshot(sectionQuery, (snapshot) => {
-            clearTimeout(loadingTimeoutId);
-            const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            items.sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
-            sectionCache[section] = items;
-            photosLoading = false;
-            photosLoadError = null;
-            if (currentSection === section) {
-                photos = items;
-                render();
-            }
         }, (err) => {
-            clearTimeout(loadingTimeoutId);
-            console.error('Firestore onSnapshot error:', err);
-            photosLoading = false;
-            photosLoadError = 'No se pudieron cargar las fotos: ' + err.message;
-            // El listener quedó roto: se elimina para poder reintentarlo
-            delete sectionListeners[section];
             showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
-            if (currentSection === section) render();
         });
-    }
-
-    function retryPhotosListener() {
-        delete sectionListeners[currentSection];
-        startPhotosListener(currentSection);
     }
 
     function showStatus(msg, type) {
@@ -2559,36 +2472,6 @@
         const sectionPhotos = photos.filter(p => (p.category || 'inicio') === currentSection);
         const unitSingular = isVideoSection ? ' video' : ' foto';
         const unitPlural = isVideoSection ? ' videos' : ' fotos';
-
-        // Mientras llega la primera respuesta de Firestore para esta sección,
-        // se muestra una cuadrícula de esqueletos en vez de dejarla vacía o
-        // mostrar "no hay fotos" antes de tiempo.
-        if (photosLoading) {
-            photoCount.textContent = 'Cargando…';
-            emptyState.style.display = 'none';
-            galleryGrid.style.display = 'grid';
-            const skeletonCount = Math.min(PHOTOS_PER_PAGE, 12);
-            for (let i = 0; i < skeletonCount; i++) {
-                const sk = document.createElement('div');
-                sk.className = 'photo-card skeleton-card';
-                sk.innerHTML = '<div class="photo-media skeleton-media"></div>';
-                galleryGrid.appendChild(sk);
-            }
-            renderPagination(1);
-            return;
-        }
-
-        if (photosLoadError) {
-            photoCount.textContent = '';
-            galleryGrid.style.display = 'none';
-            emptyState.style.display = 'block';
-            emptyState.innerHTML = '<span class="icon">⚠️</span>' + escapeHtml(photosLoadError) +
-                '<br><button type="button" class="retry-btn" id="retryPhotosBtn">Reintentar</button>';
-            const retryBtn = document.getElementById('retryPhotosBtn');
-            if (retryBtn) retryBtn.addEventListener('click', retryPhotosListener);
-            renderPagination(1);
-            return;
-        }
 
         photoCount.textContent = sectionPhotos.length + (sectionPhotos.length === 1 ? unitSingular : unitPlural);
 
