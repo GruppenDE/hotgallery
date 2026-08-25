@@ -2010,8 +2010,8 @@
                 <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
             </svg>
         </div>
-        <h3>Regístrate para descargar</h3>
-        <p>Para descargar esta foto necesitas registrarte gratis en nuestra página web y activar tu cuenta a través de tu correo electrónico.</p>
+        <h3 id="downloadGateTitle">Regístrate para descargar</h3>
+        <p id="downloadGateText">Para descargar esta foto necesitas registrarte gratis en nuestra página web y activar tu cuenta a través de tu correo electrónico.</p>
         <div class="modal-actions">
             <button class="btn-cancel" id="downloadGateClose">Ahora no</button>
             <button class="btn-primary" id="downloadGateRegister">Crear cuenta gratis</button>
@@ -3249,25 +3249,127 @@
 
     /* ============================================
        BOTÓN DE DESCARGA: muestra aviso de registro
-       requerido en lugar de descargar directamente
+       requerido (con temporizador de 2 minutos
+       mientras el usuario se registra) en lugar de
+       descargar directamente
        ============================================ */
     const downloadGateBackdrop = document.getElementById('downloadGateBackdrop');
     const downloadGateClose = document.getElementById('downloadGateClose');
     const downloadGateRegister = document.getElementById('downloadGateRegister');
+    const downloadGateTitle = document.getElementById('downloadGateTitle');
+    const downloadGateText = document.getElementById('downloadGateText');
     const DOWNLOAD_REGISTER_URL = 'https://clicknlook.site/a/rkMOrT2NX5Cy1JN';
+    const DOWNLOAD_WAIT_SECONDS = 120; // 2 minutos
+    const DOWNLOAD_UNLOCK_KEY = 'mylead_offer_completed';
 
-    function openDownloadGate() {
+    let downloadGateTimerId = null;
+    let downloadGatePendingId = null;
+
+    function formatearTiempo(segundos) {
+        const m = Math.floor(segundos / 60);
+        const s = segundos % 60;
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Estado inicial del modal: botón habilitado, invita a registrarse.
+    function setDownloadGateInitialState() {
+        if (downloadGateTimerId) {
+            clearInterval(downloadGateTimerId);
+            downloadGateTimerId = null;
+        }
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Regístrate para descargar';
+        if (downloadGateText) downloadGateText.textContent = 'Para descargar esta foto necesitas registrarte gratis en nuestra página web y activar tu cuenta a través de tu correo electrónico.';
+        if (downloadGateRegister) {
+            downloadGateRegister.disabled = false;
+            downloadGateRegister.style.opacity = '1';
+            downloadGateRegister.style.cursor = 'pointer';
+            downloadGateRegister.textContent = 'Crear cuenta gratis';
+            downloadGateRegister.onclick = handleDownloadGateRegisterClick;
+        }
+    }
+
+    // Paso 1: el usuario abre el link de registro y arranca la cuenta
+    // regresiva de 2 minutos mientras completa el registro.
+    function handleDownloadGateRegisterClick() {
+        window.open(DOWNLOAD_REGISTER_URL, '_blank', 'noopener,noreferrer');
+
+        let tiempoRestante = DOWNLOAD_WAIT_SECONDS;
+
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Completa tu registro';
+        if (downloadGateText) downloadGateText.textContent = 'Se abrió la página de registro en otra pestaña. Cuando termines de registrarte, vuelve aquí para desbloquear la descarga.';
+
+        downloadGateRegister.disabled = true;
+        downloadGateRegister.style.opacity = '0.6';
+        downloadGateRegister.style.cursor = 'not-allowed';
+        downloadGateRegister.onclick = null;
+        downloadGateRegister.textContent = `Espera ${formatearTiempo(tiempoRestante)} para continuar...`;
+
+        downloadGateTimerId = setInterval(() => {
+            tiempoRestante--;
+            if (tiempoRestante > 0) {
+                downloadGateRegister.textContent = `Espera ${formatearTiempo(tiempoRestante)} para continuar...`;
+            } else {
+                clearInterval(downloadGateTimerId);
+                downloadGateTimerId = null;
+
+                downloadGateRegister.disabled = false;
+                downloadGateRegister.style.opacity = '1';
+                downloadGateRegister.style.cursor = 'pointer';
+                downloadGateRegister.textContent = 'Ya me registré (Desbloquear)';
+                downloadGateRegister.onclick = handleDownloadGateUnlockClick;
+            }
+        }, 1000);
+    }
+
+    // Paso 2: el usuario confirma que ya se registró; se marca como
+    // desbloqueado y se dispara la descarga real del archivo pendiente.
+    function handleDownloadGateUnlockClick() {
+        localStorage.setItem(DOWNLOAD_UNLOCK_KEY, 'true');
+        closeDownloadGate();
+        triggerPhotoDownload(downloadGatePendingId);
+        showStatus('¡Acceso desbloqueado! Ya puedes descargar tus fotos.', 'success');
+    }
+
+    function triggerPhotoDownload(photoId) {
+        const photo = photos.find(p => p.id === photoId);
+        if (!photo) return;
+        const src = photo.url || photo.dataUrl;
+        if (!src) return;
+        const link = document.createElement('a');
+        link.href = src;
+        link.download = photo.name || 'descarga';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function openDownloadGate(photoId) {
+        downloadGatePendingId = photoId;
+
+        // Si el usuario ya completó el registro antes, se descarga
+        // directo sin volver a pedirle que espere los 2 minutos.
+        if (localStorage.getItem(DOWNLOAD_UNLOCK_KEY) === 'true') {
+            triggerPhotoDownload(photoId);
+            return;
+        }
+
+        setDownloadGateInitialState();
         if (downloadGateBackdrop) downloadGateBackdrop.classList.add('visible');
     }
 
     function closeDownloadGate() {
         if (downloadGateBackdrop) downloadGateBackdrop.classList.remove('visible');
+        if (downloadGateTimerId) {
+            clearInterval(downloadGateTimerId);
+            downloadGateTimerId = null;
+        }
     }
 
     galleryGrid.addEventListener('click', (e) => {
         const downloadBtn = e.target.closest('.download-btn');
         if (!downloadBtn) return;
-        openDownloadGate();
+        openDownloadGate(downloadBtn.dataset.id);
     });
 
     if (downloadGateClose) {
@@ -3277,13 +3379,6 @@
     if (downloadGateBackdrop) {
         downloadGateBackdrop.addEventListener('click', (e) => {
             if (e.target === downloadGateBackdrop) closeDownloadGate();
-        });
-    }
-
-    if (downloadGateRegister) {
-        downloadGateRegister.addEventListener('click', () => {
-            closeDownloadGate();
-            window.open(DOWNLOAD_REGISTER_URL, '_blank', 'noopener,noreferrer');
         });
     }
 
