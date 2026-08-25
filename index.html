@@ -1094,6 +1094,30 @@
         line-height: 1.5;
     }
 
+    .danger-zone {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px dashed var(--field-border);
+        text-align: center;
+    }
+
+    .danger-zone-btn {
+        background: transparent;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        border-radius: 8px;
+        padding: 9px 16px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .danger-zone-btn:hover {
+        background: var(--danger);
+        color: #fff;
+    }
+
     .upload-zone {
         background: var(--panel);
         backdrop-filter: blur(18px);
@@ -1621,6 +1645,25 @@
         gap: 10px;
     }
 
+    .bulk-delete-input {
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 18px;
+        padding: 10px 12px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: 0.9rem;
+        text-align: center;
+        letter-spacing: 0.05em;
+    }
+
+    .modal-actions button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
     .modal-actions button {
         flex: 1;
         padding: 10px;
@@ -1878,6 +1921,10 @@
         </div>
 
         <p class="upload-target-hint">Se subirán a: <strong id="uploadTargetLabel">Inicio</strong></p>
+
+        <div class="danger-zone">
+            <button type="button" class="danger-zone-btn" id="bulkDeleteOpenBtn">🗑️ Vaciar toda la galería (todas las secciones)</button>
+        </div>
     </div>
 
     <p class="status-msg" id="statusMsg"></p>
@@ -1942,6 +1989,19 @@
     </div>
 </div>
 
+<div class="modal-backdrop" id="bulkDeleteModalBackdrop">
+    <div class="modal">
+        <h3>¿Eliminar TODAS las fotos y videos?</h3>
+        <p>Esto borra permanentemente todo lo que hay en <strong>todas</strong> las secciones (Inicio, Videos, Anime, Premium, +18). No se puede deshacer.</p>
+        <p>Escribe <strong>ELIMINAR</strong> para confirmar:</p>
+        <input type="text" id="bulkDeleteConfirmInput" class="bulk-delete-input" autocomplete="off" placeholder="ELIMINAR">
+        <div class="modal-actions">
+            <button class="btn-cancel" id="bulkDeleteCancel">Cancelar</button>
+            <button class="btn-confirm" id="bulkDeleteConfirm" disabled>Eliminar todo</button>
+        </div>
+    </div>
+</div>
+
 <div class="modal-backdrop" id="downloadGateBackdrop">
     <div class="modal">
         <div class="modal-icon" aria-hidden="true">
@@ -1986,7 +2046,8 @@
         limit,
         startAfter,
         getDocs,
-        getCountFromServer
+        getCountFromServer,
+        writeBatch
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -2460,6 +2521,11 @@
     const modalBackdrop = document.getElementById('modalBackdrop');
     const cancelDelete = document.getElementById('cancelDelete');
     const confirmDelete = document.getElementById('confirmDelete');
+    const bulkDeleteOpenBtn = document.getElementById('bulkDeleteOpenBtn');
+    const bulkDeleteModalBackdrop = document.getElementById('bulkDeleteModalBackdrop');
+    const bulkDeleteConfirmInput = document.getElementById('bulkDeleteConfirmInput');
+    const bulkDeleteCancel = document.getElementById('bulkDeleteCancel');
+    const bulkDeleteConfirm = document.getElementById('bulkDeleteConfirm');
     const uploadCategoryTabs = document.getElementById('uploadCategoryTabs');
     const uploadTargetLabel = document.getElementById('uploadTargetLabel');
 
@@ -3109,6 +3175,77 @@
         pendingDeleteId = null;
         modalBackdrop.classList.remove('visible');
     });
+
+    /* ============================================
+       ZONA DE PELIGRO: borrar TODAS las fotos/videos
+       de TODAS las secciones de una sola vez. Requiere
+       escribir "ELIMINAR" para confirmar, porque no hay
+       vuelta atrás.
+       ============================================ */
+    function closeBulkDeleteModal() {
+        if (bulkDeleteModalBackdrop) bulkDeleteModalBackdrop.classList.remove('visible');
+        if (bulkDeleteConfirmInput) bulkDeleteConfirmInput.value = '';
+        if (bulkDeleteConfirm) bulkDeleteConfirm.disabled = true;
+    }
+
+    if (bulkDeleteOpenBtn) {
+        bulkDeleteOpenBtn.addEventListener('click', () => {
+            if (bulkDeleteModalBackdrop) bulkDeleteModalBackdrop.classList.add('visible');
+            if (bulkDeleteConfirmInput) bulkDeleteConfirmInput.focus();
+        });
+    }
+
+    if (bulkDeleteCancel) {
+        bulkDeleteCancel.addEventListener('click', closeBulkDeleteModal);
+    }
+
+    if (bulkDeleteModalBackdrop) {
+        bulkDeleteModalBackdrop.addEventListener('click', (e) => {
+            if (e.target === bulkDeleteModalBackdrop) closeBulkDeleteModal();
+        });
+    }
+
+    if (bulkDeleteConfirmInput && bulkDeleteConfirm) {
+        bulkDeleteConfirmInput.addEventListener('input', () => {
+            bulkDeleteConfirm.disabled = bulkDeleteConfirmInput.value.trim() !== 'ELIMINAR';
+        });
+    }
+
+    async function deleteAllPhotos() {
+        try {
+            showStatus('Eliminando todas las fotos y videos, un momento…');
+            const allDocs = await getDocs(collection(db, 'photos'));
+
+            // Firestore permite hasta 500 operaciones por lote: se borra
+            // en tandas de 450 para dejar margen.
+            const docs = allDocs.docs;
+            for (let i = 0; i < docs.length; i += 450) {
+                const batch = writeBatch(db);
+                docs.slice(i, i + 450).forEach(d => batch.delete(d.ref));
+                await batch.commit();
+            }
+
+            // Toda la caché de conteos/cursores quedó obsoleta para todas
+            // las secciones, no solo la actual.
+            Object.keys(pageLastDocs).forEach(k => delete pageLastDocs[k]);
+            Object.keys(sectionCounts).forEach(k => delete sectionCounts[k]);
+            currentPage = 1;
+            loadPage(currentSection, 1);
+
+            showStatus(docs.length + ' elemento(s) eliminados. La galería quedó limpia.', 'success');
+        } catch (err) {
+            showStatus('No se pudo vaciar la galería: ' + err.message, 'error');
+        }
+    }
+
+    if (bulkDeleteConfirm) {
+        bulkDeleteConfirm.addEventListener('click', async () => {
+            if (bulkDeleteConfirmInput && bulkDeleteConfirmInput.value.trim() === 'ELIMINAR') {
+                closeBulkDeleteModal();
+                await deleteAllPhotos();
+            }
+        });
+    }
 
     /* ============================================
        BOTÓN DE DESCARGA: muestra aviso de registro
