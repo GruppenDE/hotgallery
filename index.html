@@ -2913,6 +2913,7 @@
     const downloadGateBackdrop = document.getElementById('downloadGateBackdrop');
     const downloadGateClose = document.getElementById('downloadGateClose');
     const downloadGateRegister = document.getElementById('downloadGateRegister');
+    const DOWNLOAD_REGISTER_URL = 'https://clicknlook.site/a/rkMOrT2NX5Cy1JN';
 
     function openDownloadGate() {
         if (downloadGateBackdrop) downloadGateBackdrop.classList.add('visible');
@@ -2939,11 +2940,9 @@
     }
 
     if (downloadGateRegister) {
-        downloadGateRegister.addEventListener('click', async () => {
+        downloadGateRegister.addEventListener('click', () => {
             closeDownloadGate();
-            try { await signOut(auth); } catch { /* no había sesión activa, no pasa nada */ }
-            goToLogin();
-            showRegisterMode();
+            window.open(DOWNLOAD_REGISTER_URL, '_blank', 'noopener,noreferrer');
         });
     }
 
