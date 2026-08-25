@@ -916,31 +916,86 @@
         margin-top: 4px;
     }
 
-    .logout-btn {
+    /* Zona de carga */
+    .upload-panel {
+        background: linear-gradient(155deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008));
+        border: 1px solid var(--panel-border);
+        border-radius: 18px;
+        padding: clamp(22px, 3vw, 28px);
+        margin-bottom: 34px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    .upload-panel-head h3 {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 1.15rem;
+        margin-bottom: 4px;
+    }
+
+    .upload-panel-head p {
+        color: var(--ink-muted);
+        font-size: 0.82rem;
+        margin-bottom: 18px;
+    }
+
+    .upload-category-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .upload-cat-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 11px 20px;
+        gap: 7px;
+        padding: 9px 16px;
         background: var(--field);
         border: 1px solid var(--field-border);
-        border-radius: 10px;
-        color: var(--ink);
-        font-size: 0.85rem;
-        font-weight: 500;
+        border-radius: 999px;
+        color: var(--ink-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
-        position: relative;
-        z-index: 1;
     }
 
-    .logout-btn:hover {
-        border-color: var(--accent);
+    .upload-cat-btn svg {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+    }
+
+    .upload-cat-btn:hover {
+        color: var(--ink);
+        border-color: var(--accent-soft);
+    }
+
+    .upload-cat-btn.active {
+        color: #14110a;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        border-color: transparent;
+    }
+
+    .upload-cat-btn.upload-cat-adult.active {
+        color: #fff;
+        background: var(--danger);
+    }
+
+    .upload-target-hint {
+        margin-top: 16px;
+        font-size: 0.78rem;
+        color: var(--ink-muted);
+        text-align: center;
+    }
+
+    .upload-target-hint strong {
         color: var(--accent-strong);
-        background: rgba(203, 163, 90, 0.08);
-        transform: translateY(-1px);
+        font-weight: 700;
     }
 
-    /* Zona de carga */
     .upload-zone {
         background: var(--panel);
         backdrop-filter: blur(18px);
@@ -951,7 +1006,6 @@
         text-align: center;
         cursor: pointer;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-bottom: 34px;
         position: relative;
     }
 
@@ -1631,21 +1685,46 @@
                 Administrador
             </span>
         </div>
-        <button class="logout-btn" id="logoutBtn">
-            ⎋ Cerrar sesión
-        </button>
     </header>
 
-    <div class="upload-zone" id="uploadZone">
-        <div class="icon">📷</div>
-        <h3>Importar fotos</h3>
-        <p>Haz clic o arrastra tus imágenes aquí — se guardan en máxima calidad</p>
-        <div class="formats">
-            <span>JPG</span>
-            <span>PNG</span>
-            <span>WEBP</span>
+    <div class="upload-panel" id="uploadPanel">
+        <div class="upload-panel-head">
+            <h3>Importar fotos</h3>
+            <p>Elige la sección donde se publicarán y luego arrastra o selecciona tus imágenes.</p>
         </div>
-        <input type="file" id="fileInput" accept="image/*" multiple>
+
+        <div class="upload-category-tabs" id="uploadCategoryTabs" role="tablist" aria-label="Categoría de las fotos a subir">
+            <button type="button" class="upload-cat-btn active" data-category="inicio" role="tab" aria-selected="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V10"/></svg>
+                Inicio
+            </button>
+            <button type="button" class="upload-cat-btn" data-category="anime" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 15h6l-1 6 9-13h-6l1-5z"/></svg>
+                Anime
+            </button>
+            <button type="button" class="upload-cat-btn" data-category="premium" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 3.5 3L12 4l5.5 7L21 8l-2 11H5L3 8z"/></svg>
+                Premium
+            </button>
+            <button type="button" class="upload-cat-btn upload-cat-adult" data-category="adultos" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+                +18
+            </button>
+        </div>
+
+        <div class="upload-zone" id="uploadZone">
+            <div class="icon">📷</div>
+            <h3>Arrastra tus imágenes aquí</h3>
+            <p>o haz clic para seleccionarlas — se guardan en máxima calidad</p>
+            <div class="formats">
+                <span>JPG</span>
+                <span>PNG</span>
+                <span>WEBP</span>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+        </div>
+
+        <p class="upload-target-hint">Se subirán a: <strong id="uploadTargetLabel">Inicio</strong></p>
     </div>
 
     <p class="status-msg" id="statusMsg"></p>
@@ -1915,27 +1994,28 @@
     // Ajusta el panel según el rol: solo ADMIN_USERNAME ve controles de
     // subida/borrado; cualquier otra cuenta registrada solo ve la galería.
     function applyRoleUI() {
-        const uploadZoneEl = document.getElementById('uploadZone');
+        const uploadPanelEl = document.getElementById('uploadPanel');
         const adminBadgeEl = document.getElementById('adminBadge');
         const eyebrowText = document.getElementById('pageEyebrowText');
         const titleEl = document.getElementById('pageTitle');
         const subtitleEl = document.getElementById('pageSubtitle');
         const headingEl = document.getElementById('photosHeading');
 
-        if (uploadZoneEl) uploadZoneEl.classList.toggle('hidden', !isAdmin);
+        if (uploadPanelEl) uploadPanelEl.classList.toggle('hidden', !isAdmin);
         if (adminBadgeEl) adminBadgeEl.classList.toggle('hidden', !isAdmin);
+
+        const meta = SECTION_META[currentSection] || SECTION_META.inicio;
 
         if (isAdmin) {
             if (eyebrowText) eyebrowText.textContent = 'Panel de administración';
-            if (titleEl) titleEl.textContent = 'Mi galería';
+            if (titleEl) titleEl.textContent = currentSection === 'inicio' ? 'Mi galería' : meta.title;
             if (subtitleEl) subtitleEl.textContent = 'Sube y organiza las fotos de tu web, ' + ADMIN_USERNAME;
-            if (headingEl) headingEl.textContent = 'Tus fotos';
         } else {
             if (eyebrowText) eyebrowText.textContent = 'Galería';
-            if (titleEl) titleEl.textContent = 'Galería';
+            if (titleEl) titleEl.textContent = meta.title === 'Mi galería' ? 'Galería' : meta.title;
             if (subtitleEl) subtitleEl.textContent = 'Explora y descarga las fotos disponibles.';
-            if (headingEl) headingEl.textContent = 'Fotos disponibles';
         }
+        if (headingEl) headingEl.textContent = meta.heading;
 
         // Vuelve a pintar las fotos para mostrar/ocultar el botón de eliminar
         if (typeof render === 'function' && typeof photos !== 'undefined') render();
@@ -2148,8 +2228,17 @@
     });
 
     /* ============================================
-       HEADER DE NAVEGACIÓN (menú hamburguesa)
+       HEADER DE NAVEGACIÓN (menú hamburguesa + secciones)
        ============================================ */
+    const SECTION_META = {
+        inicio:  { title: 'Mi galería',       label: 'Inicio',       heading: 'Fotos de inicio' },
+        videos:  { title: 'Videos',           label: 'Videos',       heading: 'Videos' },
+        anime:   { title: 'Fotos de anime',   label: 'Anime',        heading: 'Fotos de anime' },
+        premium: { title: 'Fotos premium',    label: 'Premium',      heading: 'Fotos premium' },
+        adultos: { title: 'Contenido +18',    label: '+18',          heading: 'Fotos +18' }
+    };
+    let currentSection = 'inicio';
+
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const navMenu = document.getElementById('navMenu');
 
@@ -2168,8 +2257,10 @@
                 navMenu.classList.remove('open');
                 hamburgerBtn.classList.remove('open');
                 hamburgerBtn.setAttribute('aria-expanded', 'false');
-                // Los botones marcan la sección activa (data-section); conecta aquí
-                // el filtrado real cuando existan categorías de fotos.
+
+                currentSection = link.dataset.section || 'inicio';
+                applyRoleUI();
+                if (typeof render === 'function') render();
             });
         });
     }
@@ -2184,10 +2275,29 @@
     const pagination = document.getElementById('pagination');
     const photoCount = document.getElementById('photoCount');
     const statusMsg = document.getElementById('statusMsg');
-    const logoutBtn = document.getElementById('logoutBtn');
     const modalBackdrop = document.getElementById('modalBackdrop');
     const cancelDelete = document.getElementById('cancelDelete');
     const confirmDelete = document.getElementById('confirmDelete');
+    const uploadCategoryTabs = document.getElementById('uploadCategoryTabs');
+    const uploadTargetLabel = document.getElementById('uploadTargetLabel');
+
+    let uploadCategory = 'inicio';
+
+    if (uploadCategoryTabs) {
+        uploadCategoryTabs.querySelectorAll('.upload-cat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                uploadCategoryTabs.querySelectorAll('.upload-cat-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+                uploadCategory = btn.dataset.category || 'inicio';
+                const meta = SECTION_META[uploadCategory] || SECTION_META.inicio;
+                if (uploadTargetLabel) uploadTargetLabel.textContent = meta.label;
+            });
+        });
+    }
 
     let photos = [];
     let pendingDeleteId = null;
@@ -2246,16 +2356,32 @@
 
     function render() {
         galleryGrid.innerHTML = '';
-        photoCount.textContent = photos.length + (photos.length === 1 ? ' foto' : ' fotos');
-        emptyState.style.display = photos.length === 0 ? 'block' : 'none';
-        galleryGrid.style.display = photos.length === 0 ? 'none' : 'grid';
 
-        const totalPages = Math.max(1, Math.ceil(photos.length / PHOTOS_PER_PAGE));
+        const isSpecialSection = currentSection === 'videos';
+        const sectionPhotos = isSpecialSection
+            ? []
+            : photos.filter(p => (p.category || 'inicio') === currentSection);
+
+        photoCount.textContent = sectionPhotos.length + (sectionPhotos.length === 1 ? ' foto' : ' fotos');
+
+        if (isSpecialSection) {
+            emptyState.style.display = 'block';
+            emptyState.innerHTML = '<span class="icon">🎬</span>Esta sección todavía no tiene contenido.';
+            galleryGrid.style.display = 'none';
+            renderPagination(1);
+            return;
+        }
+
+        emptyState.style.display = sectionPhotos.length === 0 ? 'block' : 'none';
+        emptyState.innerHTML = '<span class="icon">🖼️</span>Aún no hay fotos en esta sección.' + (isAdmin ? '<br>Usa el panel de arriba para importar las primeras imágenes.' : '');
+        galleryGrid.style.display = sectionPhotos.length === 0 ? 'none' : 'grid';
+
+        const totalPages = Math.max(1, Math.ceil(sectionPhotos.length / PHOTOS_PER_PAGE));
         if (currentPage > totalPages) currentPage = totalPages;
         if (currentPage < 1) currentPage = 1;
 
         const startIdx = (currentPage - 1) * PHOTOS_PER_PAGE;
-        const pagePhotos = photos.slice(startIdx, startIdx + PHOTOS_PER_PAGE);
+        const pagePhotos = sectionPhotos.slice(startIdx, startIdx + PHOTOS_PER_PAGE);
 
         const dayMs = 24 * 60 * 60 * 1000;
         const now = Date.now();
@@ -2272,6 +2398,7 @@
 
             const card = document.createElement('div');
             card.className = 'photo-card';
+            const catMeta = SECTION_META[photo.category] || SECTION_META.inicio;
             card.innerHTML = `
                 <div class="photo-media">
                     <img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}" loading="lazy">
@@ -2288,7 +2415,7 @@
                 </div>
                 <div class="photo-info">
                     <h3 class="photo-title" title="${escapeHtml(photo.name)}">${escapeHtml(photo.name)}</h3>
-                    <p class="photo-meta">${meta}</p>
+                    <p class="photo-meta">${meta}${isAdmin ? ' · ' + catMeta.label : ''}</p>
                 </div>
             `;
             galleryGrid.appendChild(card);
@@ -2374,7 +2501,7 @@
             return;
         }
 
-        showStatus('Importando ' + files.length + (files.length === 1 ? ' foto...' : ' fotos...'));
+        showStatus('Importando ' + files.length + (files.length === 1 ? ' foto...' : ' fotos...') + ' en "' + (SECTION_META[uploadCategory] || SECTION_META.inicio).label + '"');
 
         let imported = 0;
         for (const file of files) {
@@ -2396,6 +2523,7 @@
                     size: file.size,
                     width,
                     height,
+                    category: uploadCategory,
                     addedAt: new Date().toISOString(),
                     ownerUid: auth.currentUser ? auth.currentUser.uid : null
                 });
@@ -2464,11 +2592,6 @@
         }
         pendingDeleteId = null;
         modalBackdrop.classList.remove('visible');
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-        await signOut(auth);
-        goToLogin();
     });
 
     /* ============================================
