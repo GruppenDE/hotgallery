@@ -1458,6 +1458,24 @@
 
     .empty-state .icon { font-size: 2.2rem; display: block; margin-bottom: 10px; opacity: 0.6; }
 
+    .retry-btn {
+        margin-top: 14px;
+        padding: 10px 22px;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        color: #14110a;
+        border: none;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .retry-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(203, 163, 90, 0.3);
+    }
+
     /* Paginación de la galería */
     .pagination {
         display: flex;
@@ -1901,8 +1919,7 @@
         onSnapshot,
         query,
         where,
-        orderBy,
-        enableMultiTabIndexedDbPersistence
+        orderBy
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1919,15 +1936,6 @@
     try { getAnalytics(firebaseApp); } catch { /* Analytics puede fallar si el navegador bloquea trackers */ }
     const auth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
-
-    // Cachea las fotos/videos ya descargados en este navegador (IndexedDB),
-    // así en visitas posteriores la galería aparece al instante mientras
-    // Firestore sincroniza cualquier cambio en segundo plano.
-    enableMultiTabIndexedDbPersistence(db).catch(() => {
-        /* La persistencia puede fallar si hay otra pestaña abierta con un
-           modo incompatible, o si el navegador la bloquea (ej. privado).
-           La app sigue funcionando con red normal en ese caso. */
-    });
 
     // El formulario de login solo pide username + contraseña, pero Firebase
     // Auth (con el proveedor de email/contraseña) necesita un email. Se
@@ -2443,6 +2451,8 @@
     const sectionListeners = {};   // { [section]: unsubscribeFn }
     const sectionCache = {};       // { [section]: photo[] }
     let photosLoading = true;
+    let photosLoadError = null;
+    let loadingTimeoutId = null;
 
     function startPhotosListener(section) {
         if (sectionListeners[section]) {
@@ -2454,24 +2464,49 @@
         }
 
         photosLoading = !sectionCache[section];
+        photosLoadError = null;
         photos = sectionCache[section] || [];
         render();
 
+        // Salvaguarda: si Firestore no responde en 10s (red, permisos,
+        // índice faltante, etc.), deja de mostrar el esqueleto para
+        // siempre y ofrece un mensaje claro con botón de reintentar.
+        clearTimeout(loadingTimeoutId);
+        loadingTimeoutId = setTimeout(() => {
+            if (photosLoading && currentSection === section) {
+                photosLoading = false;
+                photosLoadError = 'La carga está tardando demasiado. Revisa tu conexión o los permisos de Firestore.';
+                render();
+            }
+        }, 10000);
+
         const sectionQuery = query(collection(db, 'photos'), where('category', '==', section));
         sectionListeners[section] = onSnapshot(sectionQuery, (snapshot) => {
+            clearTimeout(loadingTimeoutId);
             const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             items.sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
             sectionCache[section] = items;
             photosLoading = false;
+            photosLoadError = null;
             if (currentSection === section) {
                 photos = items;
                 render();
             }
         }, (err) => {
+            clearTimeout(loadingTimeoutId);
+            console.error('Firestore onSnapshot error:', err);
             photosLoading = false;
+            photosLoadError = 'No se pudieron cargar las fotos: ' + err.message;
+            // El listener quedó roto: se elimina para poder reintentarlo
+            delete sectionListeners[section];
             showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
-            render();
+            if (currentSection === section) render();
         });
+    }
+
+    function retryPhotosListener() {
+        delete sectionListeners[currentSection];
+        startPhotosListener(currentSection);
     }
 
     function showStatus(msg, type) {
@@ -2539,6 +2574,18 @@
                 sk.innerHTML = '<div class="photo-media skeleton-media"></div>';
                 galleryGrid.appendChild(sk);
             }
+            renderPagination(1);
+            return;
+        }
+
+        if (photosLoadError) {
+            photoCount.textContent = '';
+            galleryGrid.style.display = 'none';
+            emptyState.style.display = 'block';
+            emptyState.innerHTML = '<span class="icon">⚠️</span>' + escapeHtml(photosLoadError) +
+                '<br><button type="button" class="retry-btn" id="retryPhotosBtn">Reintentar</button>';
+            const retryBtn = document.getElementById('retryPhotosBtn');
+            if (retryBtn) retryBtn.addEventListener('click', retryPhotosListener);
             renderPagination(1);
             return;
         }
