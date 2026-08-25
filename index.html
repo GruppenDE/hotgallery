@@ -690,6 +690,35 @@
         }
     }
 
+    /* Header compacto en pantallas muy angostas: reduce paddings/gaps
+       para que hamburguesa + marca + avatar quepan siempre en una fila */
+    @media (max-width: 400px) {
+        .site-nav-inner {
+            padding: 12px 14px;
+            gap: 10px;
+        }
+
+        .site-nav-brand {
+            font-size: 0.95rem;
+        }
+
+        .hamburger-btn {
+            width: 34px;
+            height: 34px;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            font-size: 0.72rem;
+        }
+
+        .nav-menu {
+            top: 61px;
+            padding: 8px 12px 14px;
+        }
+    }
+
     /* Menú de usuario: avatar con iniciales + desplegable de cierre de sesión */
     .user-menu {
         position: relative;
@@ -1275,6 +1304,57 @@
 
     .photo-card:hover .photo-media img { transform: scale(1.05); }
 
+    .photo-media video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        background: #000;
+        pointer-events: none;
+    }
+
+    /* Ícono de reproducción sobre la miniatura de video */
+    .video-play-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: rgba(9, 10, 14, 0.55);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .video-play-icon svg {
+        width: 20px;
+        height: 20px;
+        margin-left: 2px;
+    }
+
+    .photo-card:hover .video-play-icon { opacity: 0; }
+
+    /* Esqueleto de carga: se muestra mientras Firestore entrega las
+       primeras fotos/videos de la sección activa */
+    .skeleton-media {
+        background: linear-gradient(100deg, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.03) 60%);
+        background-size: 250% 100%;
+        animation: skeletonShimmer 1.4s ease-in-out infinite;
+    }
+
+    @keyframes skeletonShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -50% 0; }
+    }
+
+    .skeleton-card { pointer-events: none; }
+
     /* Insignia "nuevo", arriba a la izquierda (estilo logotipo de servicio) */
     .top-left-badges {
         position: absolute;
@@ -1677,14 +1757,18 @@
 
     <div class="upload-panel" id="uploadPanel">
         <div class="upload-panel-head">
-            <h3>Importar fotos</h3>
-            <p>Elige la sección donde se publicarán y luego arrastra o selecciona tus imágenes.</p>
+            <h3 id="uploadPanelTitle">Importar fotos</h3>
+            <p id="uploadPanelSubtitle">Elige la sección donde se publicarán y luego arrastra o selecciona tus imágenes.</p>
         </div>
 
         <div class="upload-category-tabs" id="uploadCategoryTabs" role="tablist" aria-label="Categoría de las fotos a subir">
             <button type="button" class="upload-cat-btn active" data-category="inicio" role="tab" aria-selected="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V10"/></svg>
                 Inicio
+            </button>
+            <button type="button" class="upload-cat-btn" data-category="videos" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="13" height="13" rx="2.5"/><path d="M16 10.5l4.5-3v9l-4.5-3z"/></svg>
+                Videos
             </button>
             <button type="button" class="upload-cat-btn" data-category="anime" role="tab" aria-selected="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 15h6l-1 6 9-13h-6l1-5z"/></svg>
@@ -1701,10 +1785,10 @@
         </div>
 
         <div class="upload-zone" id="uploadZone">
-            <div class="icon">📷</div>
-            <h3>Arrastra tus imágenes aquí</h3>
-            <p>o haz clic para seleccionarlas — se guardan en máxima calidad</p>
-            <div class="formats">
+            <div class="icon" id="uploadZoneIcon">📷</div>
+            <h3 id="uploadZoneTitle">Arrastra tus imágenes aquí</h3>
+            <p id="uploadZoneSubtitle">o haz clic para seleccionarlas — se guardan en máxima calidad</p>
+            <div class="formats" id="uploadZoneFormats">
                 <span>JPG</span>
                 <span>PNG</span>
                 <span>WEBP</span>
@@ -1816,7 +1900,9 @@
         doc,
         onSnapshot,
         query,
-        orderBy
+        where,
+        orderBy,
+        enableMultiTabIndexedDbPersistence
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1833,6 +1919,15 @@
     try { getAnalytics(firebaseApp); } catch { /* Analytics puede fallar si el navegador bloquea trackers */ }
     const auth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
+
+    // Cachea las fotos/videos ya descargados en este navegador (IndexedDB),
+    // así en visitas posteriores la galería aparece al instante mientras
+    // Firestore sincroniza cualquier cambio en segundo plano.
+    enableMultiTabIndexedDbPersistence(db).catch(() => {
+        /* La persistencia puede fallar si hay otra pestaña abierta con un
+           modo incompatible, o si el navegador la bloquea (ej. privado).
+           La app sigue funcionando con red normal en ese caso. */
+    });
 
     // El formulario de login solo pide username + contraseña, pero Firebase
     // Auth (con el proveedor de email/contraseña) necesita un email. Se
@@ -1894,7 +1989,7 @@
         body.classList.remove('view-login', 'light-on');
         body.classList.add('view-gallery');
         applyRoleUI();
-        startPhotosListener();
+        startPhotosListener(currentSection);
     }
 
     function goToLogin() {
@@ -2264,6 +2359,8 @@
                 hamburgerBtn.setAttribute('aria-expanded', 'false');
 
                 currentSection = link.dataset.section || 'inicio';
+                currentPage = 1;
+                startPhotosListener(currentSection);
                 applyRoleUI();
                 if (typeof render === 'function') render();
             });
@@ -2288,6 +2385,34 @@
 
     let uploadCategory = 'inicio';
 
+    // Textos/íconos de la zona de carga según se estén importando fotos o videos
+    const uploadZoneIcon = document.getElementById('uploadZoneIcon');
+    const uploadZoneTitle = document.getElementById('uploadZoneTitle');
+    const uploadZoneSubtitle = document.getElementById('uploadZoneSubtitle');
+    const uploadZoneFormats = document.getElementById('uploadZoneFormats');
+
+    const uploadPanelTitle = document.getElementById('uploadPanelTitle');
+    const uploadPanelSubtitle = document.getElementById('uploadPanelSubtitle');
+
+    function updateUploadZoneUI() {
+        const isVideo = uploadCategory === 'videos';
+        if (fileInput) fileInput.accept = isVideo ? 'video/*' : 'image/*';
+        if (uploadZoneIcon) uploadZoneIcon.textContent = isVideo ? '🎬' : '📷';
+        if (uploadZoneTitle) uploadZoneTitle.textContent = isVideo ? 'Arrastra tus videos aquí' : 'Arrastra tus imágenes aquí';
+        if (uploadZoneSubtitle) uploadZoneSubtitle.textContent = isVideo
+            ? 'o haz clic para seleccionarlos — usa clips cortos y livianos'
+            : 'o haz clic para seleccionarlas — se guardan en máxima calidad';
+        if (uploadZoneFormats) {
+            uploadZoneFormats.innerHTML = isVideo
+                ? '<span>MP4</span><span>WEBM</span><span>MOV</span>'
+                : '<span>JPG</span><span>PNG</span><span>WEBP</span>';
+        }
+        if (uploadPanelTitle) uploadPanelTitle.textContent = isVideo ? 'Importar videos' : 'Importar fotos';
+        if (uploadPanelSubtitle) uploadPanelSubtitle.textContent = isVideo
+            ? 'Elige la sección donde se publicarán y luego arrastra o selecciona tus videos.'
+            : 'Elige la sección donde se publicarán y luego arrastra o selecciona tus imágenes.';
+    }
+
     if (uploadCategoryTabs) {
         uploadCategoryTabs.querySelectorAll('.upload-cat-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -2300,26 +2425,52 @@
                 uploadCategory = btn.dataset.category || 'inicio';
                 const meta = SECTION_META[uploadCategory] || SECTION_META.inicio;
                 if (uploadTargetLabel) uploadTargetLabel.textContent = meta.label;
+                updateUploadZoneUI();
             });
         });
     }
+    updateUploadZoneUI();
 
     let photos = [];
     let pendingDeleteId = null;
     const PHOTOS_PER_PAGE = 24;
     let currentPage = 1;
 
-    // Colección de Firestore donde viven las fotos (guardadas como base64 en dataUrl)
-    let unsubscribePhotos = null;
+    // Colección de Firestore donde viven las fotos/videos (guardados como
+    // base64 en dataUrl). Se escucha SOLO la sección activa —en vez de toda
+    // la colección de golpe— para que la primera carga sea rápida; el
+    // resultado de cada sección se cachea en memoria al cambiar de pestaña.
+    const sectionListeners = {};   // { [section]: unsubscribeFn }
+    const sectionCache = {};       // { [section]: photo[] }
+    let photosLoading = true;
 
-    function startPhotosListener() {
-        if (unsubscribePhotos) return; // ya está escuchando, no duplicar
-        const photosQuery = query(collection(db, 'photos'), orderBy('addedAt', 'desc'));
-        unsubscribePhotos = onSnapshot(photosQuery, (snapshot) => {
-            photos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    function startPhotosListener(section) {
+        if (sectionListeners[section]) {
+            // ya hay un listener activo para esta sección: solo re-renderiza
+            photos = sectionCache[section] || [];
+            photosLoading = false;
             render();
+            return;
+        }
+
+        photosLoading = !sectionCache[section];
+        photos = sectionCache[section] || [];
+        render();
+
+        const sectionQuery = query(collection(db, 'photos'), where('category', '==', section));
+        sectionListeners[section] = onSnapshot(sectionQuery, (snapshot) => {
+            const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            items.sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+            sectionCache[section] = items;
+            photosLoading = false;
+            if (currentSection === section) {
+                photos = items;
+                render();
+            }
         }, (err) => {
+            photosLoading = false;
             showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
+            render();
         });
     }
 
@@ -2344,6 +2495,13 @@
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
+    function formatDuration(seconds) {
+        const s = Math.round(seconds);
+        const m = Math.floor(s / 60);
+        const rem = s % 60;
+        return m + ':' + String(rem).padStart(2, '0');
+    }
+
     function formatDate(iso) {
         if (!iso) return '';
         try {
@@ -2362,23 +2520,34 @@
     function render() {
         galleryGrid.innerHTML = '';
 
-        const isSpecialSection = currentSection === 'videos';
-        const sectionPhotos = isSpecialSection
-            ? []
-            : photos.filter(p => (p.category || 'inicio') === currentSection);
+        const isVideoSection = currentSection === 'videos';
+        const sectionPhotos = photos.filter(p => (p.category || 'inicio') === currentSection);
+        const unitSingular = isVideoSection ? ' video' : ' foto';
+        const unitPlural = isVideoSection ? ' videos' : ' fotos';
 
-        photoCount.textContent = sectionPhotos.length + (sectionPhotos.length === 1 ? ' foto' : ' fotos');
-
-        if (isSpecialSection) {
-            emptyState.style.display = 'block';
-            emptyState.innerHTML = '<span class="icon">🎬</span>Esta sección todavía no tiene contenido.';
-            galleryGrid.style.display = 'none';
+        // Mientras llega la primera respuesta de Firestore para esta sección,
+        // se muestra una cuadrícula de esqueletos en vez de dejarla vacía o
+        // mostrar "no hay fotos" antes de tiempo.
+        if (photosLoading) {
+            photoCount.textContent = 'Cargando…';
+            emptyState.style.display = 'none';
+            galleryGrid.style.display = 'grid';
+            const skeletonCount = Math.min(PHOTOS_PER_PAGE, 12);
+            for (let i = 0; i < skeletonCount; i++) {
+                const sk = document.createElement('div');
+                sk.className = 'photo-card skeleton-card';
+                sk.innerHTML = '<div class="photo-media skeleton-media"></div>';
+                galleryGrid.appendChild(sk);
+            }
             renderPagination(1);
             return;
         }
 
+        photoCount.textContent = sectionPhotos.length + (sectionPhotos.length === 1 ? unitSingular : unitPlural);
+
         emptyState.style.display = sectionPhotos.length === 0 ? 'block' : 'none';
-        emptyState.innerHTML = '<span class="icon">🖼️</span>Aún no hay fotos en esta sección.' + (isAdmin ? '<br>Usa el panel de arriba para importar las primeras imágenes.' : '');
+        emptyState.innerHTML = (isVideoSection ? '<span class="icon">🎬</span>Aún no hay videos en esta sección.' : '<span class="icon">🖼️</span>Aún no hay fotos en esta sección.') +
+            (isAdmin ? '<br>Usa el panel de arriba para importar ' + (isVideoSection ? 'los primeros videos.' : 'las primeras imágenes.') : '');
         galleryGrid.style.display = sectionPhotos.length === 0 ? 'none' : 'grid';
 
         const totalPages = Math.max(1, Math.ceil(sectionPhotos.length / PHOTOS_PER_PAGE));
@@ -2393,25 +2562,33 @@
 
         pagePhotos.forEach(photo => {
             const isNew = photo.addedAt && (now - new Date(photo.addedAt).getTime()) < dayMs;
+            const isVideo = photo.type === 'video';
             const meta = [
-                photo.size ? formatBytes(photo.size) : null
+                photo.size ? formatBytes(photo.size) : null,
+                isVideo && photo.duration ? formatDuration(photo.duration) : null
             ].filter(Boolean).join(' · ');
 
             const card = document.createElement('div');
             card.className = 'photo-card';
             const catMeta = SECTION_META[photo.category] || SECTION_META.inicio;
+            const mediaTag = isVideo
+                ? `<video src="${photo.dataUrl}" muted loop playsinline preload="metadata" title="${escapeHtml(photo.name)}"></video>`
+                : `<img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}" loading="lazy">`;
             card.innerHTML = `
                 <div class="photo-media">
-                    <img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}" loading="lazy">
+                    ${mediaTag}
+                    ${isVideo ? `<span class="video-play-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    </span>` : ''}
                     <div class="top-left-badges">
-                        <button class="download-btn" data-id="${photo.id}" aria-label="Descargar foto" title="Descargar">
+                        <button class="download-btn" data-id="${photo.id}" aria-label="Descargar ${isVideo ? 'video' : 'foto'}" title="Descargar">
                             <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                         ${isNew ? '<span class="badge-new">NUEVO</span>' : ''}
                     </div>
                     <div class="overlay"></div>
                     ${isAdmin ? `
-                    <button class="delete-btn" data-id="${photo.id}" aria-label="Eliminar foto" title="Eliminar">
+                    <button class="delete-btn" data-id="${photo.id}" aria-label="Eliminar ${isVideo ? 'video' : 'foto'}" title="Eliminar">
                         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM4 7h16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>` : ''}
                 </div>
@@ -2420,6 +2597,14 @@
                     <p class="photo-meta">${meta}${isAdmin ? (meta ? ' · ' : '') + catMeta.label : ''}</p>
                 </div>` : ''}
             `;
+            if (isVideo) {
+                const videoEl = card.querySelector('video');
+                const mediaEl = card.querySelector('.photo-media');
+                if (videoEl && mediaEl) {
+                    mediaEl.addEventListener('mouseenter', () => videoEl.play().catch(() => {}));
+                    mediaEl.addEventListener('mouseleave', () => { videoEl.pause(); videoEl.currentTime = 0; });
+                }
+            }
             galleryGrid.appendChild(card);
         });
 
@@ -2496,14 +2681,34 @@
         });
     }
 
+    // Igual que getImageDimensions pero para video: además de las
+    // dimensiones, obtiene la duración del clip para mostrarla en la ficha.
+    function getVideoMeta(dataUrl) {
+        return new Promise((resolve) => {
+            const vid = document.createElement('video');
+            vid.preload = 'metadata';
+            vid.onloadedmetadata = () => resolve({
+                width: vid.videoWidth || null,
+                height: vid.videoHeight || null,
+                duration: isFinite(vid.duration) ? vid.duration : null
+            });
+            vid.onerror = () => resolve({ width: null, height: null, duration: null });
+            vid.src = dataUrl;
+        });
+    }
+
     async function handleFiles(fileList) {
-        const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        const isVideoUpload = uploadCategory === 'videos';
+        const expectedPrefix = isVideoUpload ? 'video/' : 'image/';
+        const files = Array.from(fileList).filter(f => f.type.startsWith(expectedPrefix));
+
         if (files.length === 0) {
-            showStatus('Selecciona archivos de imagen válidos.', 'error');
+            showStatus(isVideoUpload ? 'Selecciona archivos de video válidos.' : 'Selecciona archivos de imagen válidos.', 'error');
             return;
         }
 
-        showStatus('Importando ' + files.length + (files.length === 1 ? ' foto...' : ' fotos...') + ' en "' + (SECTION_META[uploadCategory] || SECTION_META.inicio).label + '"');
+        const label = (SECTION_META[uploadCategory] || SECTION_META.inicio).label;
+        showStatus('Importando ' + files.length + (files.length === 1 ? (isVideoUpload ? ' video...' : ' foto...') : (isVideoUpload ? ' videos...' : ' fotos...')) + ' en "' + label + '"');
 
         let imported = 0;
         for (const file of files) {
@@ -2511,24 +2716,40 @@
                 const dataUrl = await fileToDataUrl(file);
 
                 // Firestore limita cada documento a ~1MB, y el base64 pesa
-                // ~33% más que el archivo original: se descartan las fotos
-                // que no entrarían para evitar que falle el guardado.
+                // ~33% más que el archivo original: se descartan los archivos
+                // que no entrarían para evitar que falle el guardado. Para
+                // video esto obliga a usar clips muy cortos y de baja resolución.
                 if (dataUrl.length > 900000) {
-                    showStatus('"' + file.name + '" pesa demasiado para guardarse en Firestore como base64 (máx. ~650KB). Comprímela e inténtalo de nuevo.', 'error');
+                    showStatus(
+                        '"' + file.name + '" pesa demasiado para guardarse como base64 (máx. ~650KB). ' +
+                        (isVideoUpload ? 'Usa un clip más corto o de menor resolución e inténtalo de nuevo.' : 'Comprímela e inténtalo de nuevo.'),
+                        'error'
+                    );
                     continue;
                 }
 
-                const { width, height } = await getImageDimensions(dataUrl);
-                await addDoc(collection(db, 'photos'), {
+                const docData = {
                     name: file.name,
                     dataUrl,
                     size: file.size,
-                    width,
-                    height,
+                    type: isVideoUpload ? 'video' : 'image',
                     category: uploadCategory,
                     addedAt: new Date().toISOString(),
                     ownerUid: auth.currentUser ? auth.currentUser.uid : null
-                });
+                };
+
+                if (isVideoUpload) {
+                    const { width, height, duration } = await getVideoMeta(dataUrl);
+                    docData.width = width;
+                    docData.height = height;
+                    docData.duration = duration;
+                } else {
+                    const { width, height } = await getImageDimensions(dataUrl);
+                    docData.width = width;
+                    docData.height = height;
+                }
+
+                await addDoc(collection(db, 'photos'), docData);
                 imported++;
             } catch (err) {
                 showStatus('Hubo un problema subiendo "' + file.name + '": ' + err.message, 'error');
@@ -2536,7 +2757,7 @@
         }
 
         if (imported > 0) {
-            showStatus('Fotos importadas correctamente.', 'success');
+            showStatus(isVideoUpload ? 'Videos importados correctamente.' : 'Fotos importadas correctamente.', 'success');
         }
         fileInput.value = '';
     }
