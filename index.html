@@ -1509,6 +1509,29 @@
         color: #fff;
     }
 
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        color: #14110a;
+    }
+
+    .modal-icon {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(155deg, rgba(203, 163, 90, 0.2), rgba(203, 163, 90, 0.05));
+        border: 1px solid var(--accent-soft);
+        color: var(--accent-strong);
+    }
+
+    .modal-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
@@ -1763,6 +1786,23 @@
         <div class="modal-actions">
             <button class="btn-cancel" id="cancelDelete">Cancelar</button>
             <button class="btn-confirm" id="confirmDelete">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="downloadGateBackdrop">
+    <div class="modal">
+        <div class="modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4.5" y="10.5" width="15" height="10" rx="2"/>
+                <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+            </svg>
+        </div>
+        <h3>Regístrate para descargar</h3>
+        <p>Para descargar esta foto necesitas registrarte gratis en nuestra página web y activar tu cuenta a través de tu correo electrónico.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="downloadGateClose">Ahora no</button>
+            <button class="btn-primary" id="downloadGateRegister">Crear cuenta gratis</button>
         </div>
     </div>
 </div>
@@ -2571,14 +2611,45 @@
     });
 
     /* ============================================
-       BOTÓN DE DESCARGA: redirige a Google en una
-       pestaña nueva
+       BOTÓN DE DESCARGA: muestra aviso de registro
+       requerido en lugar de descargar directamente
        ============================================ */
+    const downloadGateBackdrop = document.getElementById('downloadGateBackdrop');
+    const downloadGateClose = document.getElementById('downloadGateClose');
+    const downloadGateRegister = document.getElementById('downloadGateRegister');
+
+    function openDownloadGate() {
+        if (downloadGateBackdrop) downloadGateBackdrop.classList.add('visible');
+    }
+
+    function closeDownloadGate() {
+        if (downloadGateBackdrop) downloadGateBackdrop.classList.remove('visible');
+    }
+
     galleryGrid.addEventListener('click', (e) => {
         const downloadBtn = e.target.closest('.download-btn');
         if (!downloadBtn) return;
-        window.open('https://www.google.com', '_blank', 'noopener,noreferrer');
+        openDownloadGate();
     });
+
+    if (downloadGateClose) {
+        downloadGateClose.addEventListener('click', closeDownloadGate);
+    }
+
+    if (downloadGateBackdrop) {
+        downloadGateBackdrop.addEventListener('click', (e) => {
+            if (e.target === downloadGateBackdrop) closeDownloadGate();
+        });
+    }
+
+    if (downloadGateRegister) {
+        downloadGateRegister.addEventListener('click', async () => {
+            closeDownloadGate();
+            try { await signOut(auth); } catch { /* no había sesión activa, no pasa nada */ }
+            goToLogin();
+            showRegisterMode();
+        });
+    }
 
     /* ============================================
        Estado inicial: Firebase Auth avisa si ya hay
