@@ -690,6 +690,135 @@
         }
     }
 
+    /* Menú de usuario: avatar con iniciales + desplegable de cierre de sesión */
+    .user-menu {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .user-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        border: 1px solid var(--field-border);
+        color: #14110a;
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.3px;
+        cursor: pointer;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .user-avatar:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .user-avatar:focus-visible {
+        outline: 2px solid var(--accent-strong);
+        outline-offset: 3px;
+    }
+
+    .user-dropdown {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        min-width: 210px;
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        padding: 8px;
+        box-shadow: 0 20px 45px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px) scale(0.97);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+        z-index: 60;
+    }
+
+    .user-dropdown.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+
+    .user-dropdown-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px 12px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid var(--panel-border);
+    }
+
+    .user-dropdown-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        color: #14110a;
+        font-weight: 700;
+        font-size: 0.72rem;
+        flex-shrink: 0;
+    }
+
+    .user-dropdown-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--ink);
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user-dropdown-role {
+        font-size: 0.7rem;
+        color: var(--ink-muted);
+        margin-top: 2px;
+    }
+
+    .user-dropdown-btn {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        padding: 10px 10px;
+        background: transparent;
+        border: none;
+        border-radius: 9px;
+        color: var(--danger);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.18s ease;
+    }
+
+    .user-dropdown-btn svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+
+    .user-dropdown-btn:hover {
+        background: rgba(226, 100, 95, 0.14);
+    }
+
+    .user-dropdown-btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
     .wrap {
         max-width: 1180px;
         margin: 0 auto;
@@ -885,6 +1014,126 @@
     .upload-zone input[type="file"] { display: none; }
 
     .hidden { display: none !important; }
+
+    /* ============================================
+       FOOTER: redes sociales
+       ============================================ */
+    .site-footer {
+        margin-top: 60px;
+        border-top: 1px solid var(--panel-border);
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0));
+    }
+
+    .site-footer-inner {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 40px 30px 34px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+        text-align: center;
+    }
+
+    .footer-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .footer-brand-name {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 1.15rem;
+        color: var(--ink);
+        letter-spacing: 0.2px;
+    }
+
+    .footer-brand-tag {
+        font-size: 0.8rem;
+        color: var(--ink-muted);
+        max-width: 380px;
+        line-height: 1.5;
+    }
+
+    .footer-social {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .footer-social a {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        color: var(--ink-muted);
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .footer-social a svg {
+        width: 19px;
+        height: 19px;
+        fill: currentColor;
+    }
+
+    .footer-social a:hover {
+        transform: translateY(-3px);
+        color: #fff;
+        border-color: var(--accent-soft);
+    }
+
+    .footer-social a.social-whatsapp:hover { background: #25D366; border-color: #25D366; }
+    .footer-social a.social-telegram:hover { background: #26A5E4; border-color: #26A5E4; }
+    .footer-social a.social-twitter:hover  { background: #000000; border-color: #3a3a3a; }
+    .footer-social a.social-facebook:hover { background: #1877F2; border-color: #1877F2; }
+    .footer-social a.social-snapchat:hover { background: #FFFC00; border-color: #FFFC00; color: #14110a; }
+
+    .footer-bottom {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding-top: 20px;
+        border-top: 1px solid var(--panel-border);
+    }
+
+    .footer-links {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .footer-links a {
+        font-size: 0.76rem;
+        color: var(--ink-muted);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+        color: var(--accent-strong);
+    }
+
+    .footer-copy {
+        font-size: 0.74rem;
+        color: var(--ink-muted);
+        opacity: 0.8;
+    }
+
+    @media (max-width: 520px) {
+        .site-footer-inner { padding: 32px 20px 26px; }
+        .footer-social a { width: 40px; height: 40px; }
+    }
 
     .status-msg {
         text-align: center;
@@ -1338,6 +1587,29 @@
             <li><a href="#" class="nav-link" data-section="premium">Fotos premium</a></li>
             <li><a href="#" class="nav-link nav-link-18" data-section="adultos">+18</a></li>
         </ul>
+
+        <div class="user-menu hidden" id="userMenu">
+            <button class="user-avatar" id="userAvatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Abrir menú de usuario">
+                <span id="userInitials">--</span>
+            </button>
+            <div class="user-dropdown" id="userDropdown" role="menu">
+                <div class="user-dropdown-info">
+                    <div class="user-dropdown-avatar" id="userDropdownAvatar">--</div>
+                    <div>
+                        <div class="user-dropdown-name" id="userDropdownName">Usuario</div>
+                        <div class="user-dropdown-role" id="userDropdownRole">Cuenta</div>
+                    </div>
+                </div>
+                <button class="user-dropdown-btn" id="userLogoutBtn" role="menuitem" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -1390,6 +1662,42 @@
     </div>
     <nav class="pagination" id="pagination" aria-label="Paginación de la galería"></nav>
 </div>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="footer-brand">
+            <span class="footer-brand-name">Lamp</span>
+            <p class="footer-brand-tag">Tu galería personal, organizada y siempre a mano. Síguenos en redes para novedades y contenido exclusivo.</p>
+        </div>
+
+        <div class="footer-social">
+            <a class="social-whatsapp" href="https://wa.me/" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.012 2C6.494 2 2 6.477 2 11.978c0 1.98.582 3.877 1.68 5.522L2 22l4.618-1.652a10.02 10.02 0 0 0 5.394 1.554h.004c5.518 0 10.012-4.477 10.012-9.978C22.028 6.477 17.53 2 12.012 2zm0 18.148h-.003a8.147 8.147 0 0 1-4.15-1.14l-.298-.177-3.075 1.1 1.06-3.017-.194-.31a8.126 8.126 0 0 1-1.256-4.328c0-4.484 3.652-8.132 8.152-8.132 2.178 0 4.223.85 5.762 2.393a8.086 8.086 0 0 1 2.386 5.755c0 4.484-3.652 8.132-8.156 8.132z"/></svg>
+            </a>
+            <a class="social-telegram" href="https://t.me/" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+                <svg viewBox="0 0 24 24"><path d="M9.78 15.24 9.5 19.6c.42 0 .6-.18.83-.4l1.98-1.9 4.1 3.02c.75.42 1.29.2 1.49-.7l2.7-12.71h.01c.23-1.08-.39-1.5-1.13-1.23L2.4 10.7c-1.06.4-1.05 1-.18 1.27l4.5 1.4L17.02 6.4c.5-.3.95-.14.58.18z"/></svg>
+            </a>
+            <a class="social-twitter" href="https://twitter.com/" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+                <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a class="social-facebook" href="https://facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <svg viewBox="0 0 24 24"><path d="M13.5 21v-7.5h2.5l.5-3H13.5V8.5c0-.87.24-1.46 1.49-1.46H16.6V4.35C16.35 4.32 15.5 4.25 14.5 4.25c-2.1 0-3.5 1.28-3.5 3.63V10.5H8.5v3H11V21z"/></svg>
+            </a>
+            <a class="social-snapchat" href="https://snapchat.com/" target="_blank" rel="noopener noreferrer" aria-label="Snapchat">
+                <svg viewBox="0 0 24 24"><path d="M12.006 2c3.05 0 5.44 2.5 5.44 5.6 0 .9-.03 1.79.06 2.5.03.2.16.28.32.28.35 0 .96-.32 1.28-.32.4 0 .78.24.78.65 0 .5-.55.78-1.13 1.02-.26.11-.6.24-.68.4-.08.17-.02.42.1.68.34.75 1.14 2.09 2.7 2.63.19.06.33.24.31.44-.05.44-1.02.78-2.5.98-.08.24-.15.5-.22.72-.06.2-.24.32-.46.3-.3-.02-.63-.05-1-.05-.6 0-1 .16-1.6.5-.7.4-1.5.85-2.7.85-.08 0-.16 0-.24-.01h-.4c-1.2 0-2-.45-2.7-.85-.6-.34-1-.5-1.6-.5-.38 0-.7.03-1 .05-.22.02-.4-.1-.46-.3-.07-.22-.14-.48-.22-.72-1.48-.2-2.45-.54-2.5-.98-.02-.2.12-.38.31-.44 1.56-.54 2.36-1.88 2.7-2.63.12-.26.18-.51.1-.68-.08-.16-.42-.29-.68-.4-.58-.24-1.13-.52-1.13-1.02 0-.41.38-.65.78-.65.32 0 .93.32 1.28.32.16 0 .29-.08.32-.28.09-.71.06-1.6.06-2.5C6.566 4.5 8.956 2 12.006 2z"/></svg>
+            </a>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#">Términos de servicio</a>
+                <a href="#">Privacidad</a>
+                <a href="#">Contacto</a>
+            </div>
+            <p class="footer-copy">© <span id="footerYear"></span> Lamp. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
 
 <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
@@ -1508,7 +1816,101 @@
     function goToLogin() {
         body.classList.remove('view-gallery');
         body.classList.add('view-login');
+        closeUserDropdown();
     }
+
+    /* ============================================
+       Menú de usuario: avatar con iniciales + logout
+       ============================================ */
+    const userMenu = document.getElementById('userMenu');
+    const userAvatarBtn = document.getElementById('userAvatarBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const userInitialsEl = document.getElementById('userInitials');
+    const userDropdownAvatar = document.getElementById('userDropdownAvatar');
+    const userDropdownName = document.getElementById('userDropdownName');
+    const userDropdownRole = document.getElementById('userDropdownRole');
+    const userLogoutBtn = document.getElementById('userLogoutBtn');
+
+    function getDisplayUsername(user) {
+        if (!user || !user.email) return '';
+        const local = user.email.split('@')[0];
+        return local || '';
+    }
+
+    function getInitials(username) {
+        if (!username) return '?';
+        const parts = username.split(/[._-]+/).filter(Boolean);
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        return username.slice(0, 2).toUpperCase();
+    }
+
+    function updateUserMenu(user) {
+        if (!userMenu) return;
+        if (!user) {
+            userMenu.classList.add('hidden');
+            return;
+        }
+        userMenu.classList.remove('hidden');
+        const username = getDisplayUsername(user);
+        const initials = getInitials(username);
+        if (userInitialsEl) userInitialsEl.textContent = initials;
+        if (userDropdownAvatar) userDropdownAvatar.textContent = initials;
+        if (userDropdownName) userDropdownName.textContent = username || 'Usuario';
+        if (userDropdownRole) userDropdownRole.textContent = isAdmin ? 'Administrador' : 'Visitante';
+    }
+
+    function openUserDropdown() {
+        if (!userDropdown) return;
+        userDropdown.classList.add('open');
+        userAvatarBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeUserDropdown() {
+        if (!userDropdown) return;
+        userDropdown.classList.remove('open');
+        if (userAvatarBtn) userAvatarBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleUserDropdown() {
+        if (!userDropdown) return;
+        userDropdown.classList.contains('open') ? closeUserDropdown() : openUserDropdown();
+    }
+
+    if (userAvatarBtn) {
+        userAvatarBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleUserDropdown();
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!userMenu) return;
+        if (!userMenu.contains(e.target)) closeUserDropdown();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeUserDropdown();
+    });
+
+    if (userLogoutBtn) {
+        userLogoutBtn.addEventListener('click', async () => {
+            userLogoutBtn.disabled = true;
+            try {
+                await signOut(auth);
+                closeUserDropdown();
+                goToLogin();
+            } catch (err) {
+                showStatus('No se pudo cerrar sesión: ' + err.message, 'error');
+            } finally {
+                userLogoutBtn.disabled = false;
+            }
+        });
+    }
+
+    const footerYearEl = document.getElementById('footerYear');
+    if (footerYearEl) footerYearEl.textContent = new Date().getFullYear();
 
     // Ajusta el panel según el rol: solo ADMIN_USERNAME ve controles de
     // subida/borrado; cualquier otra cuenta registrada solo ve la galería.
@@ -2097,9 +2499,11 @@
     onAuthStateChanged(auth, (user) => {
         if (user) {
             isAdmin = user.email === ADMIN_EMAIL;
+            updateUserMenu(user);
             goToGallery();
         } else {
             isAdmin = false;
+            updateUserMenu(null);
             if (body.classList.contains('view-gallery')) goToLogin();
         }
     });
