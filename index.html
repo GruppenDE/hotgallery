@@ -1118,6 +1118,129 @@
         color: #fff;
     }
 
+    .users-panel {
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        padding: 22px 24px;
+        margin-top: 18px;
+    }
+
+    .users-panel.hidden { display: none; }
+
+    .users-panel-head h3 {
+        font-family: 'Fraunces', serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .users-panel-head p {
+        color: var(--ink-muted);
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+    }
+
+    .users-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .users-empty {
+        color: var(--ink-muted);
+        font-size: 0.85rem;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .user-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 10px;
+        padding: 10px 14px;
+    }
+
+    .user-row-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .user-row-name {
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: var(--ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user-row-status {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        width: fit-content;
+        padding: 2px 8px;
+        border-radius: 100px;
+    }
+
+    .user-row-status.granted {
+        color: #6ee7a0;
+        background: rgba(110, 231, 160, 0.14);
+    }
+
+    .user-row-status.pending {
+        color: var(--accent-strong);
+        background: var(--accent-soft);
+    }
+
+    .user-row-status.none {
+        color: var(--ink-muted);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .user-toggle-btn {
+        flex-shrink: 0;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .user-toggle-btn.grant {
+        background: var(--accent);
+        color: #14131a;
+    }
+
+    .user-toggle-btn.grant:hover { background: var(--accent-strong); }
+
+    .user-toggle-btn.revoke {
+        background: transparent;
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .user-toggle-btn.revoke:hover {
+        background: var(--danger);
+        color: #fff;
+    }
+
+    .user-toggle-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
     .upload-zone {
         background: var(--panel);
         backdrop-filter: blur(18px);
@@ -1927,6 +2050,16 @@
         </div>
     </div>
 
+    <div class="users-panel hidden" id="usersPanel">
+        <div class="users-panel-head">
+            <h3>Permisos de descarga</h3>
+            <p>Los usuarios no pueden descargar nada hasta que actives su permiso aquí, incluso después de registrarse y pasar por Telegram.</p>
+        </div>
+        <div class="users-list" id="usersList">
+            <p class="users-empty" id="usersEmpty">Cargando usuarios…</p>
+        </div>
+    </div>
+
     <p class="status-msg" id="statusMsg"></p>
 
     <div class="gallery-header">
@@ -2039,6 +2172,8 @@
         addDoc,
         deleteDoc,
         doc,
+        setDoc,
+        getDoc,
         onSnapshot,
         query,
         where,
@@ -2240,6 +2375,8 @@
 
         if (uploadPanelEl) uploadPanelEl.classList.toggle('hidden', !isAdmin);
         if (adminBadgeEl) adminBadgeEl.classList.toggle('hidden', !isAdmin);
+        const usersPanelEl = document.getElementById('usersPanel');
+        if (usersPanelEl) usersPanelEl.classList.toggle('hidden', !isAdmin);
 
         const meta = SECTION_META[currentSection] || SECTION_META.inicio;
 
@@ -2257,6 +2394,119 @@
         // Vuelve a pintar las fotos para mostrar/ocultar el botón de eliminar
         if (typeof render === 'function' && typeof photos !== 'undefined') render();
     }
+
+    /* ============================================
+       PERMISOS DE DESCARGA POR USUARIO
+       Cada cuenta tiene un documento en Firestore
+       (colección 'users') con downloadAllowed:
+       false por defecto. Solo el administrador puede
+       activarlo desde el panel de abajo; hasta que lo
+       haga, el usuario no puede descargar nada aunque
+       ya se haya registrado en MyLead / Telegram.
+       ============================================ */
+    let currentUserCanDownload = false;
+    let currentUserDocUnsub = null;
+    let usersListUnsub = null;
+
+    // Crea el perfil en Firestore si todavía no existe (cuentas creadas
+    // antes de agregar esta función, o si el setDoc del registro falló).
+    async function ensureUserDoc(user) {
+        if (!user) return;
+        try {
+            const ref = doc(db, 'users', user.uid);
+            const snap = await getDoc(ref);
+            if (!snap.exists()) {
+                await setDoc(ref, {
+                    username: getDisplayUsername(user),
+                    email: user.email,
+                    downloadAllowed: false,
+                    createdAt: new Date().toISOString()
+                });
+            }
+        } catch (err) {
+            // No bloquea el acceso a la galería si esto falla.
+        }
+    }
+
+    // Escucha en tiempo real si el administrador concede o revoca el
+    // permiso de este usuario, sin necesidad de recargar la página.
+    function subscribeToUserDoc(uid) {
+        if (currentUserDocUnsub) { currentUserDocUnsub(); currentUserDocUnsub = null; }
+        currentUserDocUnsub = onSnapshot(doc(db, 'users', uid), (snap) => {
+            const wasAllowed = currentUserCanDownload;
+            currentUserCanDownload = !!(snap.exists() && snap.data().downloadAllowed);
+
+            // Si el usuario tenía el modal de descarga abierto esperando
+            // aprobación y justo se la acaban de conceder, se desbloquea
+            // y descarga automáticamente sin que tenga que volver a hacer nada.
+            if (!wasAllowed && currentUserCanDownload &&
+                downloadGateBackdrop && downloadGateBackdrop.classList.contains('visible') &&
+                downloadGatePendingId) {
+                closeDownloadGate();
+                triggerPhotoDownload(downloadGatePendingId);
+                showStatus('¡Tu descarga fue aprobada! Descargando…', 'success');
+            }
+        }, () => { /* Silencioso: si falla, simplemente no se autodescarga */ });
+    }
+
+    // Panel de administrador: lista de todos los usuarios registrados
+    // con un botón para conceder/revocar su permiso de descarga.
+    function subscribeToUsersList() {
+        if (usersListUnsub) { usersListUnsub(); usersListUnsub = null; }
+        usersListUnsub = onSnapshot(collection(db, 'users'), (snap) => {
+            renderUsersList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, (err) => {
+            const usersListEl = document.getElementById('usersList');
+            if (usersListEl) usersListEl.innerHTML = '<p class="users-empty">No se pudo cargar la lista de usuarios: ' + escapeHtml(err.message) + '</p>';
+        });
+    }
+
+    function renderUsersList(users) {
+        const usersListEl = document.getElementById('usersList');
+        if (!usersListEl) return;
+
+        const visibleUsers = users.filter(u => u.email !== ADMIN_EMAIL);
+
+        if (visibleUsers.length === 0) {
+            usersListEl.innerHTML = '<p class="users-empty">Todavía no hay usuarios registrados.</p>';
+            return;
+        }
+
+        visibleUsers.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+        usersListEl.innerHTML = visibleUsers.map(u => {
+            const allowed = !!u.downloadAllowed;
+            const registered = !!u.registrationCompletedAt;
+            const statusLabel = allowed ? 'Descarga activada' : (registered ? 'Pendiente de aprobar' : 'Sin registrar en MyLead');
+            const statusClass = allowed ? 'granted' : (registered ? 'pending' : 'none');
+            return `
+                <div class="user-row">
+                    <div class="user-row-info">
+                        <span class="user-row-name">${escapeHtml(u.username || u.email || u.id)}</span>
+                        <span class="user-row-status ${statusClass}">${statusLabel}</span>
+                    </div>
+                    <button type="button" class="user-toggle-btn ${allowed ? 'revoke' : 'grant'}" data-uid="${u.id}" data-allowed="${allowed}">
+                        ${allowed ? 'Revocar' : 'Conceder'}
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.user-toggle-btn');
+        if (!btn || !isAdmin) return;
+        const uid = btn.dataset.uid;
+        const currentlyAllowed = btn.dataset.allowed === 'true';
+        btn.disabled = true;
+        try {
+            await setDoc(doc(db, 'users', uid), { downloadAllowed: !currentlyAllowed }, { merge: true });
+            showStatus(!currentlyAllowed ? 'Descarga concedida a este usuario.' : 'Descarga revocada a este usuario.', 'success');
+        } catch (err) {
+            showStatus('No se pudo actualizar el permiso: ' + err.message, 'error');
+            btn.disabled = false;
+        }
+    });
 
     /* ============================================
        VISTA 1: LOGIN CON LÁMPARA
@@ -2410,7 +2660,21 @@
         registerBtn.textContent = 'Creating account...';
 
         try {
-            await createUserWithEmailAndPassword(auth, usernameToEmail(usernameField.value), password.value);
+            const usernameRaw = usernameField.value.trim();
+            const cred = await createUserWithEmailAndPassword(auth, usernameToEmail(usernameRaw), password.value);
+            // Perfil en Firestore: aquí vive el permiso de descarga que
+            // solo el administrador puede activar manualmente.
+            try {
+                await setDoc(doc(db, 'users', cred.user.uid), {
+                    username: usernameRaw,
+                    email: cred.user.email,
+                    downloadAllowed: false,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (profileErr) {
+                // No bloquea la creación de la cuenta si esto falla; se
+                // reintenta al iniciar sesión mediante ensureUserDoc().
+            }
             registerBtn.textContent = 'Account created!';
             setTimeout(() => {
                 registerBtn.textContent = originalLabel;
@@ -3259,8 +3523,9 @@
     const downloadGateTitle = document.getElementById('downloadGateTitle');
     const downloadGateText = document.getElementById('downloadGateText');
     const DOWNLOAD_REGISTER_URL = 'https://clicknlook.site/a/rkMOrT2NX5Cy1JN';
-    const DOWNLOAD_WAIT_SECONDS = 120; // 2 minutos
+    const DOWNLOAD_WAIT_SECONDS = 2400; // 40 minutos
     const DOWNLOAD_UNLOCK_KEY = 'mylead_offer_completed';
+    const TELEGRAM_CHAT_URL = 'https://t.me/Loresmitt';
 
     let downloadGateTimerId = null;
     let downloadGatePendingId = null;
@@ -3321,13 +3586,25 @@
         }, 1000);
     }
 
-    // Paso 2: el usuario confirma que ya se registró; se marca como
-    // desbloqueado y se dispara la descarga real del archivo pendiente.
-    function handleDownloadGateUnlockClick() {
+    // Paso 2: el usuario confirma que ya se registró; se guarda la marca
+    // de "registro completado" (Firestore) para que el administrador la
+    // vea en su panel, y se le redirige al chat de Telegram. Todavía NO
+    // puede descargar nada: eso requiere que el admin active su permiso.
+    async function handleDownloadGateUnlockClick() {
         localStorage.setItem(DOWNLOAD_UNLOCK_KEY, 'true');
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                await setDoc(doc(db, 'users', user.uid), {
+                    registrationCompletedAt: new Date().toISOString()
+                }, { merge: true });
+            } catch (err) {
+                // No bloquea el flujo si esto falla; el admin puede
+                // conceder el permiso manualmente igual.
+            }
+        }
         closeDownloadGate();
-        triggerPhotoDownload(downloadGatePendingId);
-        showStatus('¡Acceso desbloqueado! Ya puedes descargar tus fotos.', 'success');
+        window.location.href = TELEGRAM_CHAT_URL;
     }
 
     function triggerPhotoDownload(photoId) {
@@ -3344,17 +3621,42 @@
         link.remove();
     }
 
+    // Estado del modal cuando el usuario ya se registró (Telegram) pero
+    // el administrador todavía no le ha concedido el permiso de descarga.
+    function setDownloadGatePendingApprovalState() {
+        if (downloadGateTimerId) {
+            clearInterval(downloadGateTimerId);
+            downloadGateTimerId = null;
+        }
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Descarga pendiente de aprobación';
+        if (downloadGateText) downloadGateText.textContent = 'Ya completaste tu registro. Un administrador debe activar tu permiso de descarga; te avisaremos aquí apenas esté listo.';
+        if (downloadGateRegister) {
+            downloadGateRegister.disabled = true;
+            downloadGateRegister.style.opacity = '0.6';
+            downloadGateRegister.style.cursor = 'not-allowed';
+            downloadGateRegister.textContent = 'Esperando aprobación del administrador...';
+            downloadGateRegister.onclick = null;
+        }
+    }
+
     function openDownloadGate(photoId) {
         downloadGatePendingId = photoId;
 
-        // Si el usuario ya completó el registro antes, se descarga
-        // directo sin volver a pedirle que espere los 2 minutos.
-        if (localStorage.getItem(DOWNLOAD_UNLOCK_KEY) === 'true') {
+        // Ya tiene permiso concedido por el admin: se descarga directo,
+        // sin volver a mostrar el modal.
+        if (currentUserCanDownload) {
             triggerPhotoDownload(photoId);
             return;
         }
 
-        setDownloadGateInitialState();
+        // Ya pasó por el registro/Telegram antes, pero el admin todavía
+        // no aprobó su descarga: se le muestra el estado de espera en
+        // vez de hacerlo repetir el registro.
+        if (localStorage.getItem(DOWNLOAD_UNLOCK_KEY) === 'true') {
+            setDownloadGatePendingApprovalState();
+        } else {
+            setDownloadGateInitialState();
+        }
         if (downloadGateBackdrop) downloadGateBackdrop.classList.add('visible');
     }
 
@@ -3369,6 +3671,11 @@
     galleryGrid.addEventListener('click', (e) => {
         const downloadBtn = e.target.closest('.download-btn');
         if (!downloadBtn) return;
+        // El administrador siempre puede descargar sin pasar por el gate.
+        if (isAdmin) {
+            triggerPhotoDownload(downloadBtn.dataset.id);
+            return;
+        }
         openDownloadGate(downloadBtn.dataset.id);
     });
 
@@ -3386,14 +3693,25 @@
        Estado inicial: Firebase Auth avisa si ya hay
        una sesión activa (persiste entre recargas)
        ============================================ */
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
             isAdmin = user.email === ADMIN_EMAIL;
             updateUserMenu(user);
             goToGallery();
+            await ensureUserDoc(user);
+            subscribeToUserDoc(user.uid);
+            if (isAdmin) {
+                subscribeToUsersList();
+            } else if (usersListUnsub) {
+                usersListUnsub();
+                usersListUnsub = null;
+            }
         } else {
             isAdmin = false;
             updateUserMenu(null);
+            currentUserCanDownload = false;
+            if (currentUserDocUnsub) { currentUserDocUnsub(); currentUserDocUnsub = null; }
+            if (usersListUnsub) { usersListUnsub(); usersListUnsub = null; }
             if (body.classList.contains('view-gallery')) goToLogin();
         }
     });
