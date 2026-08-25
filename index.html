@@ -2845,7 +2845,12 @@
                     email: meta.email || data.email || ''
                 }, { merge: true });
             }
-        } catch (err) { /* no bloquea la apertura del chat si esto falla */ }
+        } catch (err) {
+            // Antes se tragaba el error en silencio; ahora se avisa,
+            // porque si esto falla (típicamente permisos de Firestore)
+            // el chat queda "roto" sin ninguna pista visible.
+            showStatus('No se pudo abrir el chat: ' + err.message, 'error');
+        }
     }
 
     // Comprime una imagen en el navegador antes de enviarla, para que
@@ -2940,7 +2945,19 @@
                 unreadByUser: senderRole === 'admin'
             }, { merge: true });
         } catch (err) {
+            // Se muestra el error también dentro del propio chat (no solo
+            // en el status-msg del fondo, que puede pasar desapercibido
+            // detrás del modal) para poder diagnosticar el problema real
+            // (casi siempre son las reglas de seguridad de Firestore).
             showStatus('No se pudo enviar el mensaje: ' + err.message, 'error');
+            if (chatMessagesEl) {
+                const errorEl = document.createElement('p');
+                errorEl.className = 'chat-empty';
+                errorEl.style.color = 'var(--danger)';
+                errorEl.textContent = 'No se pudo enviar: ' + err.message;
+                chatMessagesEl.appendChild(errorEl);
+                chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+            }
         }
     }
 
