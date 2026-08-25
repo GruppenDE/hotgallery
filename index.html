@@ -1275,26 +1275,6 @@
 
     .photo-card:hover .photo-media img { transform: scale(1.05); }
 
-    /* Insignia de resolución, arriba a la derecha (estilo "puntuación") */
-    .badge-res {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        padding: 3px 7px;
-        background: rgba(10, 10, 12, 0.72);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 6px;
-        font-size: 0.62rem;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        color: var(--accent-strong);
-        backdrop-filter: blur(6px);
-        z-index: 2;
-    }
-
     /* Insignia "nuevo", arriba a la izquierda (estilo logotipo de servicio) */
     .badge-new {
         position: absolute;
@@ -2388,9 +2368,6 @@
 
         pagePhotos.forEach(photo => {
             const isNew = photo.addedAt && (now - new Date(photo.addedAt).getTime()) < dayMs;
-            const resBadge = (photo.width && photo.height)
-                ? `<span class="badge-res">${photo.width}×${photo.height}</span>`
-                : '';
             const meta = [
                 photo.size ? formatBytes(photo.size) : null,
                 formatDate(photo.addedAt)
@@ -2403,7 +2380,6 @@
                 <div class="photo-media">
                     <img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}" loading="lazy">
                     ${isNew ? '<span class="badge-new">NUEVO</span>' : ''}
-                    ${resBadge}
                     <div class="overlay"></div>
                     <button class="download-btn" data-id="${photo.id}" aria-label="Descargar foto" title="Descargar">
                         <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
