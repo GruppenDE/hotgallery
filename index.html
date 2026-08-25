@@ -1276,10 +1276,17 @@
     .photo-card:hover .photo-media img { transform: scale(1.05); }
 
     /* Insignia "nuevo", arriba a la izquierda (estilo logotipo de servicio) */
-    .badge-new {
+    .top-left-badges {
         position: absolute;
         top: 8px;
         left: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 2;
+    }
+
+    .badge-new {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -1290,7 +1297,6 @@
         font-weight: 700;
         letter-spacing: 0.4px;
         color: #14120d;
-        z-index: 2;
     }
 
     .photo-media .overlay {
@@ -1332,31 +1338,23 @@
     .delete-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
     .download-btn {
-        position: absolute;
-        bottom: 8px;
-        right: 44px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 30px;
-        height: 30px;
+        width: 26px;
+        height: 26px;
         padding: 0;
         background: rgba(203, 163, 90, 0.92);
         border: none;
-        border-radius: 8px;
+        border-radius: 7px;
         color: #14131a;
         cursor: pointer;
-        opacity: 0;
-        transform: translateY(4px);
-        transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
-        z-index: 2;
+        transition: background 0.2s ease, transform 0.2s ease;
+        flex-shrink: 0;
     }
 
-    .photo-card:hover .download-btn,
-    .photo-card:focus-within .download-btn { opacity: 1; transform: translateY(0); }
-
-    .download-btn:hover { background: var(--accent-strong); }
-    .download-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; }
+    .download-btn:hover { background: var(--accent-strong); transform: translateY(-1px); }
+    .download-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; }
 
     /* Ficha bajo la imagen, estilo título + metadatos de catálogo */
     .photo-info {
@@ -2379,11 +2377,13 @@
             card.innerHTML = `
                 <div class="photo-media">
                     <img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}" loading="lazy">
-                    ${isNew ? '<span class="badge-new">NUEVO</span>' : ''}
+                    <div class="top-left-badges">
+                        <button class="download-btn" data-id="${photo.id}" aria-label="Descargar foto" title="Descargar">
+                            <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        ${isNew ? '<span class="badge-new">NUEVO</span>' : ''}
+                    </div>
                     <div class="overlay"></div>
-                    <button class="download-btn" data-id="${photo.id}" aria-label="Descargar foto" title="Descargar">
-                        <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
                     ${isAdmin ? `
                     <button class="delete-btn" data-id="${photo.id}" aria-label="Eliminar foto" title="Eliminar">
                         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM4 7h16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2571,24 +2571,13 @@
     });
 
     /* ============================================
-       DESCARGA DE FOTOS: descarga directa, sin
-       puerta de registro ni correo electrónico
+       BOTÓN DE DESCARGA: redirige a Google en una
+       pestaña nueva
        ============================================ */
-    function downloadPhoto(id) {
-        const photo = photos.find(p => p.id === id);
-        if (!photo) return;
-        const a = document.createElement('a');
-        a.href = photo.dataUrl;
-        a.download = photo.name || 'foto.jpg';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-    }
-
     galleryGrid.addEventListener('click', (e) => {
         const downloadBtn = e.target.closest('.download-btn');
         if (!downloadBtn) return;
-        downloadPhoto(downloadBtn.dataset.id);
+        window.open('https://www.google.com', '_blank', 'noopener,noreferrer');
     });
 
     /* ============================================
