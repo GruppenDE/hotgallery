@@ -1340,6 +1340,21 @@
 
     .photo-card:hover .video-play-icon { opacity: 0; }
 
+    /* Esqueleto de carga: se muestra mientras Firestore entrega las
+       primeras fotos/videos de la sección activa */
+    .skeleton-media {
+        background: linear-gradient(100deg, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.03) 60%);
+        background-size: 250% 100%;
+        animation: skeletonShimmer 1.4s ease-in-out infinite;
+    }
+
+    @keyframes skeletonShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -50% 0; }
+    }
+
+    .skeleton-card { pointer-events: none; }
+
     /* Insignia "nuevo", arriba a la izquierda (estilo logotipo de servicio) */
     .top-left-badges {
         position: absolute;
@@ -1885,6 +1900,7 @@
         doc,
         onSnapshot,
         query,
+        where,
         orderBy
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -1963,7 +1979,7 @@
         body.classList.remove('view-login', 'light-on');
         body.classList.add('view-gallery');
         applyRoleUI();
-        startPhotosListener();
+        startPhotosListener(currentSection);
     }
 
     function goToLogin() {
@@ -2333,6 +2349,8 @@
                 hamburgerBtn.setAttribute('aria-expanded', 'false');
 
                 currentSection = link.dataset.section || 'inicio';
+                currentPage = 1;
+                startPhotosListener(currentSection);
                 applyRoleUI();
                 if (typeof render === 'function') render();
             });
@@ -2408,17 +2426,45 @@
     const PHOTOS_PER_PAGE = 24;
     let currentPage = 1;
 
-    // Colección de Firestore donde viven las fotos/videos (guardadas como base64 en dataUrl)
-    let unsubscribePhotos = null;
+    // Colección de Firestore donde viven las fotos/videos (guardadas como
+    // base64 en dataUrl). En vez de descargar TODAS las fotos de TODAS las
+    // secciones de golpe (lo que hacía lenta la primera carga), se escucha
+    // solo la sección activa; cada sección se cachea en memoria la primera
+    // vez, así cambiar de pestaña después es instantáneo.
+    const sectionListeners = {};   // { [section]: unsubscribeFn }
+    const sectionCache = {};       // { [section]: photo[] }
+    let photosLoading = true;
 
-    function startPhotosListener() {
-        if (unsubscribePhotos) return; // ya está escuchando, no duplicar
-        const photosQuery = query(collection(db, 'photos'), orderBy('addedAt', 'desc'));
-        unsubscribePhotos = onSnapshot(photosQuery, (snapshot) => {
-            photos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    function startPhotosListener(section) {
+        if (sectionListeners[section]) {
+            // ya hay un listener activo para esta sección: solo re-renderiza
+            photos = sectionCache[section] || [];
+            photosLoading = false;
             render();
+            return;
+        }
+
+        photosLoading = !sectionCache[section];
+        photos = sectionCache[section] || [];
+        render();
+
+        const sectionQuery = query(collection(db, 'photos'), where('category', '==', section));
+        sectionListeners[section] = onSnapshot(sectionQuery, (snapshot) => {
+            const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            items.sort((a, b) => new Date(b.addedAt || 0) - new Date(a.addedAt || 0));
+            sectionCache[section] = items;
+            photosLoading = false;
+            if (currentSection === section) {
+                photos = items;
+                render();
+            }
         }, (err) => {
+            photosLoading = false;
+            // El listener quedó roto: se elimina para poder reintentar al
+            // volver a entrar a la sección
+            delete sectionListeners[section];
             showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
+            if (currentSection === section) render();
         });
     }
 
@@ -2472,6 +2518,24 @@
         const sectionPhotos = photos.filter(p => (p.category || 'inicio') === currentSection);
         const unitSingular = isVideoSection ? ' video' : ' foto';
         const unitPlural = isVideoSection ? ' videos' : ' fotos';
+
+        // Mientras llega la primera respuesta de Firestore para esta sección
+        // se muestra una cuadrícula de "esqueletos" en vez de dejarla en
+        // blanco o mostrar "no hay fotos" antes de tiempo.
+        if (photosLoading) {
+            photoCount.textContent = 'Cargando…';
+            emptyState.style.display = 'none';
+            galleryGrid.style.display = 'grid';
+            const skeletonCount = Math.min(PHOTOS_PER_PAGE, 12);
+            for (let i = 0; i < skeletonCount; i++) {
+                const sk = document.createElement('div');
+                sk.className = 'photo-card skeleton-card';
+                sk.innerHTML = '<div class="photo-media skeleton-media"></div>';
+                galleryGrid.appendChild(sk);
+            }
+            renderPagination(1);
+            return;
+        }
 
         photoCount.textContent = sectionPhotos.length + (sectionPhotos.length === 1 ? unitSingular : unitPlural);
 
