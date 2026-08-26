@@ -1068,6 +1068,34 @@
         border-color: transparent;
     }
 
+    /* Toggle Fotos/Videos, exclusivo de la categoría +18 */
+    .upload-media-type-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .upload-media-type-btn {
+        flex: 1;
+        padding: 9px 14px;
+        background: var(--field);
+        border: 1px solid var(--field-border);
+        border-radius: 10px;
+        color: var(--ink-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .upload-media-type-btn:hover { color: var(--ink); border-color: var(--accent-soft); }
+
+    .upload-media-type-btn.active {
+        color: #14110a;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        border-color: transparent;
+    }
+
     .upload-url-zone {
         background: var(--field);
         border: 1px solid var(--field-border);
@@ -2433,6 +2461,11 @@
             </button>
         </div>
 
+        <div class="upload-media-type-tabs hidden" id="uploadMediaTypeTabs" role="tablist" aria-label="Tipo de contenido +18">
+            <button type="button" class="upload-media-type-btn active" data-media-type="image" role="tab" aria-selected="true">📷 Fotos</button>
+            <button type="button" class="upload-media-type-btn" data-media-type="video" role="tab" aria-selected="false">🎬 Videos</button>
+        </div>
+
         <div class="upload-mode-tabs" id="uploadModeTabs" role="tablist" aria-label="Forma de importar">
             <button type="button" class="upload-mode-btn active" data-mode="file" role="tab" aria-selected="true">📁 Subir archivo</button>
             <button type="button" class="upload-mode-btn" data-mode="url" role="tab" aria-selected="false">🔗 Pegar URL</button>
@@ -3669,6 +3702,7 @@
     }
 
     let uploadCategory = 'inicio';
+    let uploadMediaType = 'image'; // solo aplica cuando uploadCategory === 'adultos'
 
     // Textos/íconos de la zona de carga según se estén importando fotos o videos
     const uploadZoneIcon = document.getElementById('uploadZoneIcon');
@@ -3678,9 +3712,20 @@
 
     const uploadPanelTitle = document.getElementById('uploadPanelTitle');
     const uploadPanelSubtitle = document.getElementById('uploadPanelSubtitle');
+    const uploadMediaTypeTabs = document.getElementById('uploadMediaTypeTabs');
+    const uploadUrlLabel = document.getElementById('uploadUrlLabel');
+
+    // La categoría "videos" siempre es video; en "+18" el admin elige con el
+    // toggle Fotos/Videos; el resto de secciones son siempre fotos.
+    function isCurrentUploadVideo() {
+        if (uploadCategory === 'videos') return true;
+        if (uploadCategory === 'adultos') return uploadMediaType === 'video';
+        return false;
+    }
 
     function updateUploadZoneUI() {
-        const isVideo = uploadCategory === 'videos';
+        const isVideo = isCurrentUploadVideo();
+        if (uploadMediaTypeTabs) uploadMediaTypeTabs.classList.toggle('hidden', uploadCategory !== 'adultos');
         if (fileInput) fileInput.accept = isVideo ? 'video/*' : 'image/*';
         if (uploadZoneIcon) uploadZoneIcon.textContent = isVideo ? '🎬' : '📷';
         if (uploadZoneTitle) uploadZoneTitle.textContent = isVideo ? 'Arrastra tus videos aquí' : 'Arrastra tus imágenes aquí';
@@ -3696,6 +3741,27 @@
         if (uploadPanelSubtitle) uploadPanelSubtitle.textContent = isVideo
             ? 'Elige la sección donde se publicarán y luego arrastra o selecciona tus videos.'
             : 'Elige la sección donde se publicarán y luego arrastra o selecciona tus imágenes.';
+        if (uploadUrlLabel) uploadUrlLabel.textContent = isVideo
+            ? 'Pega una o varias URLs de videos (una por línea)'
+            : 'Pega una o varias URLs de imágenes (una por línea)';
+        if (urlInput) urlInput.placeholder = isVideo
+            ? 'https://ejemplo.com/video1.mp4\nhttps://ejemplo.com/video2.mp4'
+            : 'https://ejemplo.com/foto1.jpg\nhttps://ejemplo.com/foto2.jpg';
+    }
+
+    if (uploadMediaTypeTabs) {
+        uploadMediaTypeTabs.querySelectorAll('.upload-media-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                uploadMediaTypeTabs.querySelectorAll('.upload-media-type-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+                uploadMediaType = btn.dataset.mediaType || 'image';
+                updateUploadZoneUI();
+            });
+        });
     }
 
     if (uploadCategoryTabs) {
@@ -3708,6 +3774,15 @@
                 btn.classList.add('active');
                 btn.setAttribute('aria-selected', 'true');
                 uploadCategory = btn.dataset.category || 'inicio';
+                if (uploadCategory !== 'adultos') {
+                    uploadMediaType = 'image';
+                    if (uploadMediaTypeTabs) {
+                        uploadMediaTypeTabs.querySelectorAll('.upload-media-type-btn').forEach(b => {
+                            b.classList.toggle('active', b.dataset.mediaType === 'image');
+                            b.setAttribute('aria-selected', b.dataset.mediaType === 'image' ? 'true' : 'false');
+                        });
+                    }
+                }
                 const meta = SECTION_META[uploadCategory] || SECTION_META.inicio;
                 if (uploadTargetLabel) uploadTargetLabel.textContent = meta.label;
                 updateUploadZoneUI();
@@ -4078,7 +4153,7 @@
     }
 
     async function handleFiles(fileList) {
-        const isVideoUpload = uploadCategory === 'videos';
+        const isVideoUpload = isCurrentUploadVideo();
         const expectedPrefix = isVideoUpload ? 'video/' : 'image/';
         const files = Array.from(fileList).filter(f => f.type.startsWith(expectedPrefix));
 
@@ -4173,7 +4248,7 @@
     // que pesa unos pocos bytes en vez de cientos de KB. Esto es lo que
     // hace que la galería cargue rápido sin importar cuántas fotos tenga.
     async function handleUrlImport(rawText) {
-        const isVideoUpload = uploadCategory === 'videos';
+        const isVideoUpload = isCurrentUploadVideo();
         const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
         const urls = lines.filter(isLikelyUrl);
         const invalidCount = lines.length - urls.length;
