@@ -26,6 +26,21 @@
         padding: 0;
         box-sizing: border-box;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Quita el recuadro azul que el navegador dibuja por defecto al hacer
+       click/tap en botones (outline/tap-highlight nativo). Los estados de
+       foco accesibles ya están definidos explícitamente con :focus-visible
+       en los elementos que lo necesitan, así que este reset no afecta la
+       accesibilidad. */
+    button {
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus:not(:focus-visible) {
+        outline: none;
     }
 
     html, body {
@@ -1526,6 +1541,17 @@
     .chat-msg-text { white-space: pre-wrap; word-break: break-word; }
     .chat-msg-link { color: var(--accent-strong); text-decoration: underline; word-break: break-all; }
     .chat-msg-link:hover { color: var(--accent); }
+
+    /* Evita el borde/recuadro dorado que el navegador aplica por defecto al
+       enlace (outline de foco) cuando se hace click en un link dentro del
+       chat privado. */
+    .chat-msg-link,
+    .chat-msg-link:focus,
+    .chat-msg-link:active,
+    .chat-msg-link:focus-visible {
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+    }
 
     .chat-attach-preview {
         display: flex;
