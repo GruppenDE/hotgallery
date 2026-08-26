@@ -1553,6 +1553,19 @@
         -webkit-tap-highlight-color: transparent;
     }
 
+    /* Burbuja que contiene un link: borde dorado propio (distinto del
+       outline nativo) para que resalte con claridad. */
+    .chat-msg.has-link {
+        border: 2px solid var(--accent-strong);
+    }
+
+    /* En los mensajes propios (mine) la burbuja ya es dorada, así que el
+       link necesita texto negro para no perderse sobre ese fondo. */
+    .chat-msg.mine.has-link .chat-msg-link {
+        color: #14131a;
+        font-weight: 600;
+    }
+
     .chat-attach-preview {
         display: flex;
         align-items: center;
@@ -3102,9 +3115,10 @@
     // Convierte URLs sueltas dentro de un texto ya escapado en enlaces
     // clicables, sin permitir inyección de HTML (el texto se escapa
     // primero con escapeHtml y luego solo se envuelven las URLs).
+    const chatUrlPattern = /((https?:\/\/|www\.)[^\s<]+)/gi;
+
     function linkifyEscapedText(escapedText) {
-        const urlPattern = /((https?:\/\/|www\.)[^\s<]+)/gi;
-        return escapedText.replace(urlPattern, (match) => {
+        return escapedText.replace(chatUrlPattern, (match) => {
             let href = match;
             if (!/^https?:\/\//i.test(href)) href = 'https://' + href;
             return `<a href="${href}" class="chat-msg-link" target="_blank" rel="noopener noreferrer">${match}</a>`;
@@ -3123,7 +3137,9 @@
             const imageHtml = m.imageDataUrl ? `<img src="${m.imageDataUrl}" class="chat-msg-image" alt="Imagen adjunta">` : '';
             const textHtml = m.text ? `<div class="chat-msg-text">${linkifyEscapedText(escapeHtml(m.text))}</div>` : '';
             const hasImage = !!m.imageDataUrl;
-            return `<div class="chat-msg ${mine ? 'mine' : 'theirs'}${hasImage ? ' has-image' : ''}">${imageHtml}${textHtml}</div>`;
+            chatUrlPattern.lastIndex = 0;
+            const hasLink = !!(m.text && chatUrlPattern.test(m.text));
+            return `<div class="chat-msg ${mine ? 'mine' : 'theirs'}${hasImage ? ' has-image' : ''}${hasLink ? ' has-link' : ''}">${imageHtml}${textHtml}</div>`;
         }).join('');
         chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
     }
