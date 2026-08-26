@@ -591,14 +591,6 @@
         margin-right: auto;
     }
 
-    /* Oculta el botón de hamburguesa en escritorio: el menú ya se
-       muestra en fila y no necesita el toggle de móvil. */
-    @media (min-width: 721px) {
-        .hamburger-btn {
-            display: none;
-        }
-    }
-
     .hamburger-btn {
         width: 38px;
         height: 38px;
@@ -638,6 +630,14 @@
 
     .hamburger-btn.open span:nth-child(3) {
         transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* Oculta el botón de hamburguesa en escritorio: el menú ya se
+       muestra en fila y no necesita el toggle de móvil. */
+    @media (min-width: 721px) {
+        .hamburger-btn {
+            display: none;
+        }
     }
 
     .nav-menu {
