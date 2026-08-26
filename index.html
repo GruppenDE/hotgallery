@@ -1553,9 +1553,11 @@
         -webkit-tap-highlight-color: transparent;
     }
 
-    /* Burbuja que contiene un link: borde dorado propio (distinto del
-       outline nativo) para que resalte con claridad. */
-    .chat-msg.has-link {
+    /* Burbuja que contiene un link: borde dorado propio para que resalte
+       con claridad. En los mensajes propios (mine) el fondo ya es dorado,
+       así que agregar un borde de otro tono generaba un doble contorno;
+       ahí se deja el dorado predeterminado del fondo sin borde extra. */
+    .chat-msg.theirs.has-link {
         border: 2px solid var(--accent-strong);
     }
 
