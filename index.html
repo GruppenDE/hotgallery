@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2308,7 +2308,7 @@
                  role="button"
                  tabindex="0"
                  aria-pressed="false"
-                 aria-label="Encender o apagar la lámpara para mostrar el formulario">
+                 aria-label="Lampe ein- oder ausschalten, um das Formular anzuzeigen">
                 <div class="pull-string" id="string"></div>
                 <div class="pull-ball" id="ball"></div>
             </div>
@@ -2318,58 +2318,58 @@
 
     <div class="scene">
         <!-- Formulario de Login -->
-        <div class="login-form" id="loginCard" lang="en">
-            <span class="form-eyebrow">Sign in</span>
-            <h2>Welcome back</h2>
-            <p class="form-subtitle">Enter your credentials to access your workspace.</p>
+        <div class="login-form" id="loginCard" lang="de">
+            <span class="form-eyebrow">Anmelden</span>
+            <h2>Willkommen zurück</h2>
+            <p class="form-subtitle">Gib deine Zugangsdaten ein, um auf deinen Arbeitsbereich zuzugreifen.</p>
             <form id="loginForm" autocomplete="on">
                 <div class="form-group">
-                    <label for="username">Username</label>
-                    <input id="username" name="username" type="text" placeholder="Enter your username" autocomplete="username" required>
+                    <label for="username">Benutzername</label>
+                    <input id="username" name="username" type="text" placeholder="Gib deinen Benutzernamen ein" autocomplete="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+                    <label for="password">Passwort</label>
+                    <input id="password" name="password" type="password" placeholder="Gib dein Passwort ein" autocomplete="current-password" required>
                 </div>
                 <div class="form-options">
                     <label class="remember-me">
                         <input type="checkbox" name="remember">
-                        Remember me
+                        Angemeldet bleiben
                     </label>
-                    <a href="#">Forgot password?</a>
+                    <a href="#">Passwort vergessen?</a>
                 </div>
                 <p class="form-error" id="loginError"></p>
-                <button class="login-btn" type="submit">Sign In</button>
+                <button class="login-btn" type="submit">Anmelden</button>
             </form>
-            <p class="form-footer">Don't have an account? <a href="#" id="toRegister">Create one</a></p>
+            <p class="form-footer">Noch kein Konto? <a href="#" id="toRegister">Jetzt erstellen</a></p>
         </div>
 
         <!-- Formulario de Registro -->
-        <div class="login-form register-form" id="registerCard" lang="en">
-            <span class="form-eyebrow">Sign up</span>
-            <h2>Create your account</h2>
-            <p class="form-subtitle">Join the workspace in just a few seconds.</p>
+        <div class="login-form register-form" id="registerCard" lang="de">
+            <span class="form-eyebrow">Registrieren</span>
+            <h2>Konto erstellen</h2>
+            <p class="form-subtitle">Tritt dem Arbeitsbereich in wenigen Sekunden bei.</p>
             <form id="registerForm" autocomplete="on" novalidate>
                 <div class="form-group">
-                    <label for="reg-username">Username</label>
-                    <input id="reg-username" name="username" type="text" placeholder="Choose a username" autocomplete="username" required minlength="3">
+                    <label for="reg-username">Benutzername</label>
+                    <input id="reg-username" name="username" type="text" placeholder="Wähle einen Benutzernamen" autocomplete="username" required minlength="3">
                 </div>
                 <div class="form-group">
-                    <label for="reg-password">Password</label>
-                    <input id="reg-password" name="password" type="password" placeholder="Create a password" autocomplete="new-password" required minlength="6">
+                    <label for="reg-password">Passwort</label>
+                    <input id="reg-password" name="password" type="password" placeholder="Erstelle ein Passwort" autocomplete="new-password" required minlength="6">
                 </div>
                 <div class="form-group">
-                    <label for="reg-confirm">Confirm password</label>
-                    <input id="reg-confirm" name="confirm" type="password" placeholder="Repeat your password" autocomplete="new-password" required minlength="6">
+                    <label for="reg-confirm">Passwort bestätigen</label>
+                    <input id="reg-confirm" name="confirm" type="password" placeholder="Wiederhole dein Passwort" autocomplete="new-password" required minlength="6">
                 </div>
                 <p class="form-error" id="registerError"></p>
-                <button class="login-btn" type="submit">Create account</button>
+                <button class="login-btn" type="submit">Konto erstellen</button>
             </form>
-            <p class="form-footer">Already have an account? <a href="#" id="toLogin">Sign in</a></p>
+            <p class="form-footer">Du hast bereits ein Konto? <a href="#" id="toLogin">Anmelden</a></p>
         </div>
     </div>
 
-    <p class="hint" id="hint">🖱️ Mantén presionado y arrastra la cuerda hacia abajo (o pulsa Enter) para encender</p>
+    <p class="hint" id="hint">🖱️ Halte die Schnur gedrückt und ziehe sie nach unten (oder drücke Enter), um einzuschalten</p>
 
 </div>
 
@@ -2382,23 +2382,23 @@
     <div class="site-nav-inner">
         <img src="logo.png" alt="LampSex" class="site-nav-logo">
         <ul class="nav-menu" id="navMenu">
-            <li><a href="#" class="nav-link active" data-section="inicio">Inicio</a></li>
+            <li><a href="#" class="nav-link active" data-section="inicio">Startseite</a></li>
             <li><a href="#" class="nav-link" data-section="videos">Videos</a></li>
-            <li><a href="#" class="nav-link" data-section="anime">Fotos de anime</a></li>
-            <li><a href="#" class="nav-link" data-section="premium">Vip premium</a></li>
+            <li><a href="#" class="nav-link" data-section="anime">Anime-Fotos</a></li>
+            <li><a href="#" class="nav-link" data-section="premium">VIP Premium</a></li>
             <li><a href="#" class="nav-link nav-link-18" data-section="adultos">+18</a></li>
         </ul>
 
         <div class="user-menu hidden" id="userMenu">
-            <button class="user-avatar" id="userAvatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Abrir menú de usuario">
+            <button class="user-avatar" id="userAvatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Benutzermenü öffnen">
                 <span id="userInitials">--</span>
             </button>
             <div class="user-dropdown" id="userDropdown" role="menu">
                 <div class="user-dropdown-info">
                     <div class="user-dropdown-avatar" id="userDropdownAvatar">--</div>
                     <div>
-                        <div class="user-dropdown-name" id="userDropdownName">Usuario</div>
-                        <div class="user-dropdown-role" id="userDropdownRole">Cuenta</div>
+                        <div class="user-dropdown-name" id="userDropdownName">Benutzer</div>
+                        <div class="user-dropdown-role" id="userDropdownRole">Konto</div>
                     </div>
                 </div>
                 <button class="user-dropdown-btn" id="userLogoutBtn" role="menuitem" type="button">
@@ -2407,12 +2407,12 @@
                         <polyline points="16 17 21 12 16 7"/>
                         <line x1="21" y1="12" x2="9" y2="12"/>
                     </svg>
-                    Cerrar sesión
+                    Abmelden
                 </button>
             </div>
         </div>
 
-        <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu">
+        <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="navMenu">
             <span></span><span></span><span></span>
         </button>
     </div>
@@ -2425,39 +2425,39 @@
                 <span class="admin-star" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1L12 1.5z"/></svg>
                 </span>
-                <span id="pageEyebrowText">Panel de administración</span>
+                <span id="pageEyebrowText">Verwaltungsbereich</span>
             </span>
-            <h1 id="pageTitle">Mi galería</h1>
-            <p id="pageSubtitle">Sube y organiza las fotos de tu web, cristhianzh1994</p>
-            <span class="admin-badge" id="adminBadge" title="Cuenta con permisos de administrador">
+            <h1 id="pageTitle">Meine Galerie</h1>
+            <p id="pageSubtitle">Lade Fotos für deine Website hoch und organisiere sie, cristhianzh1994</p>
+            <span class="admin-badge" id="adminBadge" title="Konto mit Administratorrechten">
                 <span class="admin-star" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1L12 1.5z"/></svg>
                 </span>
-                Administrador
+                Administrator
             </span>
         </div>
     </header>
 
     <div class="admin-panel-wrapper hidden" id="adminPanelWrapper">
         <div class="admin-tabs" id="adminTabs" role="tablist" aria-label="Panel de administración">
-            <button type="button" class="admin-tab-btn active" data-admin-tab="upload" role="tab" aria-selected="true">📤 Importar</button>
-            <button type="button" class="admin-tab-btn" data-admin-tab="users" role="tab" aria-selected="false">🔓 Permisos</button>
+            <button type="button" class="admin-tab-btn active" data-admin-tab="upload" role="tab" aria-selected="true">📤 Importieren</button>
+            <button type="button" class="admin-tab-btn" data-admin-tab="users" role="tab" aria-selected="false">🔓 Berechtigungen</button>
             <button type="button" class="admin-tab-btn" data-admin-tab="chats" role="tab" aria-selected="false">
-                💬 Mensajes
+                💬 Nachrichten
                 <span class="admin-tab-badge hidden" id="adminChatsBadge">0</span>
             </button>
         </div>
 
     <div class="upload-panel" id="uploadPanel">
         <div class="upload-panel-head">
-            <h3 id="uploadPanelTitle">Importar fotos</h3>
-            <p id="uploadPanelSubtitle">Elige la sección donde se publicarán y luego arrastra o selecciona tus imágenes.</p>
+            <h3 id="uploadPanelTitle">Fotos importieren</h3>
+            <p id="uploadPanelSubtitle">Wähle den Bereich aus, in dem die Fotos veröffentlicht werden, und ziehe deine Bilder hierher oder wähle sie aus.</p>
         </div>
 
         <div class="upload-category-tabs" id="uploadCategoryTabs" role="tablist" aria-label="Categoría de las fotos a subir">
             <button type="button" class="upload-cat-btn active" data-category="inicio" role="tab" aria-selected="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V10"/></svg>
-                Inicio
+                Startseite
             </button>
             <button type="button" class="upload-cat-btn" data-category="videos" role="tab" aria-selected="false">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="13" height="13" rx="2.5"/><path d="M16 10.5l4.5-3v9l-4.5-3z"/></svg>
@@ -2483,14 +2483,14 @@
         </div>
 
         <div class="upload-mode-tabs" id="uploadModeTabs" role="tablist" aria-label="Forma de importar">
-            <button type="button" class="upload-mode-btn active" data-mode="file" role="tab" aria-selected="true">📁 Subir archivo</button>
-            <button type="button" class="upload-mode-btn" data-mode="url" role="tab" aria-selected="false">🔗 Pegar URL</button>
+            <button type="button" class="upload-mode-btn active" data-mode="file" role="tab" aria-selected="true">📁 Datei hochladen</button>
+            <button type="button" class="upload-mode-btn" data-mode="url" role="tab" aria-selected="false">🔗 URL einfügen</button>
         </div>
 
         <div class="upload-zone" id="uploadZone">
             <div class="icon" id="uploadZoneIcon">📷</div>
-            <h3 id="uploadZoneTitle">Arrastra tus imágenes aquí</h3>
-            <p id="uploadZoneSubtitle">o haz clic para seleccionarlas — se guardan en máxima calidad</p>
+            <h3 id="uploadZoneTitle">Ziehe deine Bilder hierher</h3>
+            <p id="uploadZoneSubtitle">oder klicke, um sie auszuwählen — sie werden in höchster Qualität gespeichert</p>
             <div class="formats" id="uploadZoneFormats">
                 <span>JPG</span>
                 <span>PNG</span>
@@ -2500,36 +2500,36 @@
         </div>
 
         <div class="upload-url-zone hidden" id="uploadUrlZone">
-            <label for="urlInput" id="uploadUrlLabel">Pega una o varias URLs de imágenes (una por línea)</label>
+            <label for="urlInput" id="uploadUrlLabel">Füge eine oder mehrere Bild-URLs ein (eine pro Zeile)</label>
             <textarea id="urlInput" rows="5" placeholder="https://ejemplo.com/foto1.jpg&#10;https://ejemplo.com/foto2.jpg"></textarea>
-            <button type="button" class="btn-primary" id="urlImportBtn">Importar desde URL</button>
-            <p class="upload-url-hint">No se guarda ningún archivo pesado en la base de datos: solo el enlace. La imagen se carga directamente desde donde la alojes, así que asegúrate de que el enlace sea público y permanente.</p>
+            <button type="button" class="btn-primary" id="urlImportBtn">Von URL importieren</button>
+            <p class="upload-url-hint">Es wird keine große Datei in der Datenbank gespeichert: nur der Link. Das Bild wird direkt von dort geladen, wo du es hostest — stelle also sicher, dass der Link öffentlich und dauerhaft erreichbar ist.</p>
         </div>
 
-        <p class="upload-target-hint">Se subirán a: <strong id="uploadTargetLabel">Inicio</strong></p>
+        <p class="upload-target-hint">Wird hochgeladen nach: <strong id="uploadTargetLabel">Startseite</strong></p>
 
         <div class="danger-zone">
-            <button type="button" class="danger-zone-btn" id="bulkDeleteOpenBtn">🗑️ Vaciar toda la galería (todas las secciones)</button>
+            <button type="button" class="danger-zone-btn" id="bulkDeleteOpenBtn">🗑️ Gesamte Galerie leeren (alle Bereiche)</button>
         </div>
     </div>
 
     <div class="users-panel admin-tab-hidden" id="usersPanel">
         <div class="users-panel-head">
-            <h3>Permisos de descarga</h3>
-            <p>Los usuarios no pueden descargar nada hasta que actives su permiso aquí, incluso después de registrarse y pasar por Telegram.</p>
+            <h3>Download-Berechtigungen</h3>
+            <p>Benutzer können nichts herunterladen, bis du ihre Berechtigung hier aktivierst — auch nicht nach der Registrierung und dem Kontakt über Telegram.</p>
         </div>
         <div class="users-list" id="usersList">
-            <p class="users-empty" id="usersEmpty">Cargando usuarios…</p>
+            <p class="users-empty" id="usersEmpty">Benutzer werden geladen…</p>
         </div>
     </div>
 
     <div class="users-panel admin-tab-hidden" id="chatsPanel">
         <div class="users-panel-head">
-            <h3>Mensajes de usuarios</h3>
-            <p>Conversaciones privadas con cada usuario. Puedes autorizar descargas directamente desde el chat.</p>
+            <h3>Nachrichten von Benutzern</h3>
+            <p>Private Unterhaltungen mit jedem Benutzer. Du kannst Downloads direkt aus dem Chat heraus genehmigen.</p>
         </div>
         <div class="users-list" id="chatsList">
-            <p class="users-empty" id="chatsEmpty">Cargando conversaciones…</p>
+            <p class="users-empty" id="chatsEmpty">Unterhaltungen werden geladen…</p>
         </div>
     </div>
     </div>
@@ -2537,14 +2537,14 @@
     <p class="status-msg" id="statusMsg"></p>
 
     <div class="gallery-header">
-        <h2 id="photosHeading">Tus fotos</h2>
-        <span id="photoCount">0 fotos</span>
+        <h2 id="photosHeading">Deine Fotos</h2>
+        <span id="photoCount">0 Fotos</span>
     </div>
 
     <div id="galleryGrid" class="gallery-grid"></div>
     <div class="empty-state" id="emptyState">
         <span class="icon">🖼️</span>
-        Aún no has subido ninguna foto.<br>Usa la zona de arriba para importar tus primeras imágenes.
+        Du hast noch kein Foto hochgeladen.<br>Nutze den Bereich oben, um deine ersten Bilder zu importieren.
     </div>
     <nav class="pagination" id="pagination" aria-label="Paginación de la galería"></nav>
 </div>
@@ -2553,7 +2553,7 @@
     <div class="site-footer-inner">
         <div class="footer-brand">
             <span class="footer-brand-name">LampSex</span>
-            <p class="footer-brand-tag">Tu galería personal, organizada y siempre a mano. Síguenos en redes para novedades y contenido exclusivo.</p>
+            <p class="footer-brand-tag">Deine persönliche Galerie, organisiert und immer griffbereit. Folge uns in den sozialen Netzwerken für Neuigkeiten und exklusive Inhalte.</p>
         </div>
 
         <div class="footer-social">
@@ -2576,35 +2576,35 @@
 
         <div class="footer-bottom">
             <div class="footer-links">
-                <a href="#">Términos de servicio</a>
-                <a href="#">Privacidad</a>
-                <a href="#">Contacto</a>
+                <a href="#">Nutzungsbedingungen</a>
+                <a href="#">Datenschutz</a>
+                <a href="#">Kontakt</a>
             </div>
-            <p class="footer-copy">© <span id="footerYear"></span> LampSex. Todos los derechos reservados.</p>
+            <p class="footer-copy">© <span id="footerYear"></span> LampSex. Alle Rechte vorbehalten.</p>
         </div>
     </div>
 </footer>
 
 <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
-        <h3>¿Eliminar esta foto?</h3>
-        <p>Esta acción no se puede deshacer. La foto se borrará de tu galería de forma permanente.</p>
+        <h3>Dieses Foto löschen?</h3>
+        <p>Diese Aktion kann nicht rückgängig gemacht werden. Das Foto wird dauerhaft aus deiner Galerie gelöscht.</p>
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelDelete">Cancelar</button>
-            <button class="btn-confirm" id="confirmDelete">Eliminar</button>
+            <button class="btn-cancel" id="cancelDelete">Abbrechen</button>
+            <button class="btn-confirm" id="confirmDelete">Löschen</button>
         </div>
     </div>
 </div>
 
 <div class="modal-backdrop" id="bulkDeleteModalBackdrop">
     <div class="modal">
-        <h3>¿Eliminar TODAS las fotos y videos?</h3>
-        <p>Esto borra permanentemente todo lo que hay en <strong>todas</strong> las secciones (Inicio, Videos, Anime, Premium, +18). No se puede deshacer.</p>
-        <p>Escribe <strong>ELIMINAR</strong> para confirmar:</p>
-        <input type="text" id="bulkDeleteConfirmInput" class="bulk-delete-input" autocomplete="off" placeholder="ELIMINAR">
+        <h3>ALLE Fotos und Videos löschen?</h3>
+        <p>Dies löscht dauerhaft alles in <strong>allen</strong> Bereichen (Startseite, Videos, Anime, Premium, +18). Kann nicht rückgängig gemacht werden.</p>
+        <p>Gib <strong>LÖSCHEN</strong> ein, um zu bestätigen:</p>
+        <input type="text" id="bulkDeleteConfirmInput" class="bulk-delete-input" autocomplete="off" placeholder="LÖSCHEN">
         <div class="modal-actions">
-            <button class="btn-cancel" id="bulkDeleteCancel">Cancelar</button>
-            <button class="btn-confirm" id="bulkDeleteConfirm" disabled>Eliminar todo</button>
+            <button class="btn-cancel" id="bulkDeleteCancel">Abbrechen</button>
+            <button class="btn-confirm" id="bulkDeleteConfirm" disabled>Alles löschen</button>
         </div>
     </div>
 </div>
@@ -2617,17 +2617,17 @@
                 <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
             </svg>
         </div>
-        <h3 id="downloadGateTitle">Regístrate para descargar</h3>
-        <p id="downloadGateText">Para descargar esta foto necesitas registrarte gratis en nuestra página web y activar tu cuenta a través de tu correo electrónico.</p>
+        <h3 id="downloadGateTitle">Registriere dich, um herunterzuladen</h3>
+        <p id="downloadGateText">Um dieses Foto herunterzuladen, musst du dich kostenlos auf unserer Website registrieren und dein Konto per E-Mail aktivieren.</p>
         <div class="modal-actions">
-            <button class="btn-cancel" id="downloadGateClose">Ahora no</button>
-            <button class="btn-primary" id="downloadGateRegister">Crear cuenta gratis</button>
+            <button class="btn-cancel" id="downloadGateClose">Jetzt nicht</button>
+            <button class="btn-primary" id="downloadGateRegister">Kostenloses Konto erstellen</button>
         </div>
     </div>
 </div>
 
 <!-- Botón flotante: chat privado con el administrador (usuarios normales) -->
-<button type="button" class="chat-fab hidden" id="chatFab" aria-label="Chat con el administrador">
+<button type="button" class="chat-fab hidden" id="chatFab" aria-label="Chat mit dem Administrator">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
     </svg>
@@ -2639,28 +2639,28 @@
     <div class="chat-modal">
         <div class="chat-modal-head">
             <div class="chat-modal-head-info">
-                <h3 id="chatModalTitle">Chat con el administrador</h3>
-                <p id="chatModalSubtitle">Escríbenos si tienes dudas sobre tu registro o tu descarga.</p>
+                <h3 id="chatModalTitle">Chat mit dem Administrator</h3>
+                <p id="chatModalSubtitle">Schreib uns, wenn du Fragen zu deiner Registrierung oder deinem Download hast.</p>
             </div>
-            <button type="button" class="user-toggle-btn grant hidden" id="chatGrantBtn">Conceder descarga</button>
-            <button type="button" class="chat-close-btn" id="chatCloseBtn" aria-label="Cerrar chat">✕</button>
+            <button type="button" class="user-toggle-btn grant hidden" id="chatGrantBtn">Download gewähren</button>
+            <button type="button" class="chat-close-btn" id="chatCloseBtn" aria-label="Chat schließen">✕</button>
         </div>
         <div class="chat-messages" id="chatMessages">
-            <p class="chat-empty">Escribe tu primer mensaje…</p>
+            <p class="chat-empty">Schreib deine erste Nachricht…</p>
         </div>
         <div class="chat-attach-preview hidden" id="chatAttachPreview">
-            <img id="chatAttachPreviewImg" alt="Imagen a enviar">
-            <button type="button" class="chat-attach-preview-remove" id="chatAttachPreviewRemove" aria-label="Quitar imagen">✕</button>
+            <img id="chatAttachPreviewImg" alt="Zu sendendes Bild">
+            <button type="button" class="chat-attach-preview-remove" id="chatAttachPreviewRemove" aria-label="Bild entfernen">✕</button>
         </div>
         <form class="chat-input-row" id="chatForm">
-            <button type="button" class="chat-attach-btn" id="chatAttachBtn" title="Adjuntar imagen">
+            <button type="button" class="chat-attach-btn" id="chatAttachBtn" title="Bild anhängen">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                 </svg>
             </button>
             <input type="file" id="chatImageInput" accept="image/*" style="display:none">
-            <input type="text" id="chatTextInput" placeholder="Escribe un mensaje..." autocomplete="off" maxlength="500">
-            <button type="submit" class="chat-send-btn">Enviar</button>
+            <input type="text" id="chatTextInput" placeholder="Schreib eine Nachricht..." autocomplete="off" maxlength="500">
+            <button type="submit" class="chat-send-btn">Senden</button>
         </form>
     </div>
 </div>
@@ -2866,7 +2866,7 @@
                 closeUserDropdown();
                 goToLogin();
             } catch (err) {
-                showStatus('No se pudo cerrar sesión: ' + err.message, 'error');
+                showStatus('Die Abmeldung ist fehlgeschlagen: ' + err.message, 'error');
             } finally {
                 userLogoutBtn.disabled = false;
             }
@@ -2893,13 +2893,13 @@
         const meta = SECTION_META[currentSection] || SECTION_META.inicio;
 
         if (isAdmin) {
-            if (eyebrowText) eyebrowText.textContent = 'Panel de administración';
-            if (titleEl) titleEl.textContent = currentSection === 'inicio' ? 'Mi galería' : meta.title;
-            if (subtitleEl) subtitleEl.textContent = 'Sube y organiza las fotos de tu web, ' + ADMIN_USERNAME;
+            if (eyebrowText) eyebrowText.textContent = 'Verwaltungsbereich';
+            if (titleEl) titleEl.textContent = currentSection === 'inicio' ? 'Meine Galerie' : meta.title;
+            if (subtitleEl) subtitleEl.textContent = 'Lade Fotos für deine Website hoch und organisiere sie, ' + ADMIN_USERNAME;
         } else {
-            if (eyebrowText) eyebrowText.textContent = 'Galería';
-            if (titleEl) titleEl.textContent = meta.title === 'Mi galería' ? 'Galería' : meta.title;
-            if (subtitleEl) subtitleEl.textContent = 'Explora y descarga las fotos disponibles.';
+            if (eyebrowText) eyebrowText.textContent = 'Galerie';
+            if (titleEl) titleEl.textContent = meta.title === 'Meine Galerie' ? 'Galerie' : meta.title;
+            if (subtitleEl) subtitleEl.textContent = 'Durchsuche und lade die verfügbaren Fotos herunter.';
         }
         if (headingEl) headingEl.textContent = meta.heading;
 
@@ -2956,7 +2956,7 @@
                 downloadGatePendingId) {
                 closeDownloadGate();
                 triggerPhotoDownload(downloadGatePendingId);
-                showStatus('¡Tu descarga fue aprobada! Descargando…', 'success');
+                showStatus('Dein Download wurde genehmigt! Wird heruntergeladen…', 'success');
             }
         }, () => { /* Silencioso: si falla, simplemente no se autodescarga */ });
     }
@@ -2982,7 +2982,7 @@
             renderUsersList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         }, (err) => {
             const usersListEl = document.getElementById('usersList');
-            if (usersListEl) usersListEl.innerHTML = '<p class="users-empty">No se pudo cargar la lista de usuarios: ' + escapeHtml(err.message) + '</p>';
+            if (usersListEl) usersListEl.innerHTML = '<p class="users-empty">Die Benutzerliste konnte nicht geladen werden: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -2993,7 +2993,7 @@
         const visibleUsers = users.filter(u => u.email !== ADMIN_EMAIL);
 
         if (visibleUsers.length === 0) {
-            usersListEl.innerHTML = '<p class="users-empty">Todavía no hay usuarios registrados.</p>';
+            usersListEl.innerHTML = '<p class="users-empty">Es sind noch keine Benutzer registriert.</p>';
             return;
         }
 
@@ -3002,7 +3002,7 @@
         usersListEl.innerHTML = visibleUsers.map(u => {
             const allowed = !!u.downloadAllowed;
             const registered = !!u.registrationCompletedAt;
-            const statusLabel = allowed ? 'Descarga activada' : (registered ? 'Pendiente de aprobar' : 'Sin registrar en MyLead');
+            const statusLabel = allowed ? 'Download aktiviert' : (registered ? 'Warten auf Genehmigung' : 'Nicht bei MyLead registriert');
             const statusClass = allowed ? 'granted' : (registered ? 'pending' : 'none');
             return `
                 <div class="user-row">
@@ -3011,7 +3011,7 @@
                         <span class="user-row-status ${statusClass}">${statusLabel}</span>
                     </div>
                     <button type="button" class="user-toggle-btn ${allowed ? 'revoke' : 'grant'}" data-uid="${u.id}" data-allowed="${allowed}">
-                        ${allowed ? 'Revocar' : 'Conceder'}
+                        ${allowed ? 'Entziehen' : 'Gewähren'}
                     </button>
                 </div>
             `;
@@ -3026,9 +3026,9 @@
         btn.disabled = true;
         try {
             await setDoc(doc(db, 'users', uid), { downloadAllowed: !currentlyAllowed }, { merge: true });
-            showStatus(!currentlyAllowed ? 'Descarga concedida a este usuario.' : 'Descarga revocada a este usuario.', 'success');
+            showStatus(!currentlyAllowed ? 'Download für diesen Benutzer gewährt.' : 'Download für diesen Benutzer entzogen.', 'success');
         } catch (err) {
-            showStatus('No se pudo actualizar el permiso: ' + err.message, 'error');
+            showStatus('Die Berechtigung konnte nicht aktualisiert werden: ' + err.message, 'error');
             btn.disabled = false;
         }
     });
@@ -3128,7 +3128,7 @@
             // Antes se tragaba el error en silencio; ahora se avisa,
             // porque si esto falla (típicamente permisos de Firestore)
             // el chat queda "roto" sin ninguna pista visible.
-            showStatus('No se pudo abrir el chat: ' + err.message, 'error');
+            showStatus('Der Chat konnte nicht geöffnet werden: ' + err.message, 'error');
         }
     }
 
@@ -3179,13 +3179,13 @@
     function renderChatMessages(messages) {
         if (!chatMessagesEl) return;
         if (!messages.length) {
-            chatMessagesEl.innerHTML = '<p class="chat-empty">Escribe tu primer mensaje…</p>';
+            chatMessagesEl.innerHTML = '<p class="chat-empty">Schreib deine erste Nachricht…</p>';
             return;
         }
         const myUid = auth.currentUser ? auth.currentUser.uid : null;
         chatMessagesEl.innerHTML = messages.map(m => {
             const mine = m.senderId === myUid;
-            const imageHtml = m.imageDataUrl ? `<img src="${m.imageDataUrl}" class="chat-msg-image" alt="Imagen adjunta">` : '';
+            const imageHtml = m.imageDataUrl ? `<img src="${m.imageDataUrl}" class="chat-msg-image" alt="Angehängtes Bild">` : '';
             const textHtml = m.text ? `<div class="chat-msg-text">${linkifyEscapedText(escapeHtml(m.text))}</div>` : '';
             const hasImage = !!m.imageDataUrl;
             chatUrlPattern.lastIndex = 0;
@@ -3200,7 +3200,7 @@
         chatMessagesUnsub = onSnapshot(
             query(chatMessagesRef(uid), orderBy('createdAt', 'asc')),
             (snap) => renderChatMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
-            () => { if (chatMessagesEl) chatMessagesEl.innerHTML = '<p class="chat-empty">No se pudo cargar la conversación.</p>'; }
+            () => { if (chatMessagesEl) chatMessagesEl.innerHTML = '<p class="chat-empty">Die Unterhaltung konnte nicht geladen werden.</p>'; }
         );
     }
 
@@ -3223,7 +3223,7 @@
             });
             await setDoc(chatDocRef(chatCurrentUid), {
                 lastMessageAt: new Date().toISOString(),
-                lastMessagePreview: imageDataUrl ? '📷 Imagen' : text.slice(0, 80),
+                lastMessagePreview: imageDataUrl ? '📷 Bild' : text.slice(0, 80),
                 unreadByAdmin: senderRole === 'user',
                 unreadByUser: senderRole === 'admin'
             }, { merge: true });
@@ -3232,12 +3232,12 @@
             // en el status-msg del fondo, que puede pasar desapercibido
             // detrás del modal) para poder diagnosticar el problema real
             // (casi siempre son las reglas de seguridad de Firestore).
-            showStatus('No se pudo enviar el mensaje: ' + err.message, 'error');
+            showStatus('Die Nachricht konnte nicht gesendet werden: ' + err.message, 'error');
             if (chatMessagesEl) {
                 const errorEl = document.createElement('p');
                 errorEl.className = 'chat-empty';
                 errorEl.style.color = 'var(--danger)';
-                errorEl.textContent = 'No se pudo enviar: ' + err.message;
+                errorEl.textContent = 'Konnte nicht gesendet werden: ' + err.message;
                 chatMessagesEl.appendChild(errorEl);
                 chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
             }
@@ -3246,7 +3246,7 @@
 
     function updateChatGrantButton() {
         if (!chatGrantBtn) return;
-        chatGrantBtn.textContent = chatTargetUserAllowed ? 'Revocar descarga' : 'Conceder descarga';
+        chatGrantBtn.textContent = chatTargetUserAllowed ? 'Download entziehen' : 'Download gewähren';
         chatGrantBtn.classList.toggle('revoke', chatTargetUserAllowed);
         chatGrantBtn.classList.toggle('grant', !chatTargetUserAllowed);
     }
@@ -3266,8 +3266,8 @@
 
         await ensureChatDoc(uid, opts.meta);
 
-        if (chatModalTitle) chatModalTitle.textContent = chatIsAdminView ? (opts.meta && (opts.meta.username || opts.meta.email) || 'Usuario') : 'Chat con el administrador';
-        if (chatModalSubtitle) chatModalSubtitle.textContent = chatIsAdminView ? 'Conversación privada' : 'Escríbenos si tienes dudas sobre tu registro o tu descarga.';
+        if (chatModalTitle) chatModalTitle.textContent = chatIsAdminView ? (opts.meta && (opts.meta.username || opts.meta.email) || 'Benutzer') : 'Chat mit dem Administrator';
+        if (chatModalSubtitle) chatModalSubtitle.textContent = chatIsAdminView ? 'Private Unterhaltung' : 'Schreib uns, wenn du Fragen zu deiner Registrierung oder deinem Download hast.';
 
         if (chatGrantBtn) chatGrantBtn.classList.toggle('hidden', !chatIsAdminView);
 
@@ -3304,9 +3304,9 @@
             chatGrantBtn.disabled = true;
             try {
                 await setDoc(doc(db, 'users', chatCurrentUid), { downloadAllowed: !chatTargetUserAllowed }, { merge: true });
-                showStatus(!chatTargetUserAllowed ? 'Descarga concedida a este usuario.' : 'Descarga revocada a este usuario.', 'success');
+                showStatus(!chatTargetUserAllowed ? 'Download für diesen Benutzer gewährt.' : 'Download für diesen Benutzer entzogen.', 'success');
             } catch (err) {
-                showStatus('No se pudo actualizar el permiso: ' + err.message, 'error');
+                showStatus('Die Berechtigung konnte nicht aktualisiert werden: ' + err.message, 'error');
             } finally {
                 chatGrantBtn.disabled = false;
             }
@@ -3324,11 +3324,11 @@
                 try {
                     imageDataUrl = await compressImageFile(file);
                 } catch (err) {
-                    showStatus('No se pudo procesar la imagen.', 'error');
+                    showStatus('Das Bild konnte nicht verarbeitet werden.', 'error');
                     return;
                 }
                 if (imageDataUrl.length > CHAT_MAX_IMAGE_DATAURL_LENGTH) {
-                    showStatus('La imagen es muy grande, prueba con otra más pequeña.', 'error');
+                    showStatus('Das Bild ist zu groß, versuche es mit einem kleineren.', 'error');
                     return;
                 }
             }
@@ -3359,7 +3359,7 @@
             updateAdminChatsBadge(chats);
         }, (err) => {
             const el = document.getElementById('chatsList');
-            if (el) el.innerHTML = '<p class="users-empty">No se pudieron cargar los chats: ' + escapeHtml(err.message) + '</p>';
+            if (el) el.innerHTML = '<p class="users-empty">Die Chats konnten nicht geladen werden: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -3367,20 +3367,20 @@
         const el = document.getElementById('chatsList');
         if (!el) return;
         if (!chats.length) {
-            el.innerHTML = '<p class="users-empty">Todavía no hay conversaciones.</p>';
+            el.innerHTML = '<p class="users-empty">Es gibt noch keine Unterhaltungen.</p>';
             return;
         }
         chats.sort((a, b) => (b.lastMessageAt || '').localeCompare(a.lastMessageAt || ''));
         el.innerHTML = chats.map(c => {
             const unread = !!c.unreadByAdmin;
-            const preview = c.lastMessagePreview || 'Sin mensajes todavía';
+            const preview = c.lastMessagePreview || 'Noch keine Nachrichten';
             return `
                 <div class="user-row chat-row ${unread ? 'unread' : ''}" data-uid="${c.id}" data-username="${escapeHtml(c.username || '')}" data-email="${escapeHtml(c.email || '')}">
                     <div class="user-row-info">
                         <span class="user-row-name">${escapeHtml(c.username || c.email || c.id)}${unread ? '<span class="chat-dot"></span>' : ''}</span>
                         <span class="user-row-status none">${escapeHtml(preview)}</span>
                     </div>
-                    <button type="button" class="user-toggle-btn grant chat-open-btn">Abrir chat</button>
+                    <button type="button" class="user-toggle-btn grant chat-open-btn">Chat öffnen</button>
                 </div>
             `;
         }).join('');
@@ -3536,15 +3536,15 @@
         }
 
         if (password.value !== confirm.value) {
-            registerError.textContent = 'Las contraseñas no coinciden. Inténtalo de nuevo.';
+            registerError.textContent = 'Die Passwörter stimmen nicht überein. Bitte versuche es erneut.';
             registerError.classList.add('visible');
             confirm.focus();
             return;
         }
 
-        const originalLabel = 'Create account';
+        const originalLabel = 'Konto erstellen';
         registerBtn.disabled = true;
-        registerBtn.textContent = 'Creating account...';
+        registerBtn.textContent = 'Konto wird erstellt...';
 
         try {
             const usernameRaw = usernameField.value.trim();
@@ -3562,7 +3562,7 @@
                 // No bloquea la creación de la cuenta si esto falla; se
                 // reintenta al iniciar sesión mediante ensureUserDoc().
             }
-            registerBtn.textContent = 'Account created!';
+            registerBtn.textContent = 'Konto erstellt!';
             setTimeout(() => {
                 registerBtn.textContent = originalLabel;
                 registerBtn.disabled = false;
@@ -3573,11 +3573,11 @@
             registerBtn.textContent = originalLabel;
             registerBtn.disabled = false;
             if (err.code === 'auth/email-already-in-use') {
-                registerError.textContent = 'Ese nombre de usuario ya está en uso.';
+                registerError.textContent = 'Dieser Benutzername wird bereits verwendet.';
             } else if (err.code === 'auth/weak-password') {
-                registerError.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+                registerError.textContent = 'Das Passwort muss mindestens 6 Zeichen lang sein.';
             } else {
-                registerError.textContent = 'No se pudo crear la cuenta: ' + err.message;
+                registerError.textContent = 'Das Konto konnte nicht erstellt werden: ' + err.message;
             }
             registerError.classList.add('visible');
         }
@@ -3595,13 +3595,13 @@
         const usernameVal = document.getElementById('username').value.trim();
         const passwordVal = document.getElementById('password').value.trim();
 
-        const originalLabel = 'Sign In';
+        const originalLabel = 'Anmelden';
         loginBtn.disabled = true;
-        loginBtn.textContent = 'Signing in...';
+        loginBtn.textContent = 'Anmeldung läuft...';
 
         try {
             await signInWithEmailAndPassword(auth, usernameToEmail(usernameVal), passwordVal);
-            loginBtn.textContent = 'Welcome!';
+            loginBtn.textContent = 'Willkommen!';
             setTimeout(() => {
                 loginBtn.disabled = false;
                 loginBtn.textContent = originalLabel;
@@ -3610,7 +3610,7 @@
         } catch (err) {
             loginBtn.textContent = originalLabel;
             loginBtn.disabled = false;
-            loginError.textContent = 'Usuario o contraseña incorrectos. Inténtalo de nuevo.';
+            loginError.textContent = 'Benutzername oder Passwort falsch. Bitte versuche es erneut.';
             loginError.classList.add('visible');
         }
     });
@@ -3619,11 +3619,11 @@
        HEADER DE NAVEGACIÓN (menú hamburguesa + secciones)
        ============================================ */
     const SECTION_META = {
-        inicio:  { title: 'Mi galería',       label: 'Inicio',       heading: 'Fotos de inicio' },
+        inicio:  { title: 'Meine Galerie',    label: 'Startseite',   heading: 'Startseiten-Fotos' },
         videos:  { title: 'Videos',           label: 'Videos',       heading: 'Videos' },
-        anime:   { title: 'Fotos de anime',   label: 'Anime',        heading: 'Fotos de anime' },
-        premium: { title: 'Fotos premium',    label: 'Premium',      heading: 'Fotos premium' },
-        adultos: { title: 'Contenido +18',    label: '+18',          heading: 'Fotos +18' }
+        anime:   { title: 'Anime-Fotos',      label: 'Anime',        heading: 'Anime-Fotos' },
+        premium: { title: 'Premium-Fotos',    label: 'Premium',      heading: 'Premium-Fotos' },
+        adultos: { title: 'Inhalt +18',       label: '+18',          heading: 'Fotos +18' }
     };
     let currentSection = 'inicio';
 
@@ -3749,22 +3749,22 @@
         if (uploadMediaTypeTabs) uploadMediaTypeTabs.classList.toggle('hidden', !CATEGORIES_WITH_MEDIA_TYPE_TOGGLE.includes(uploadCategory));
         if (fileInput) fileInput.accept = isVideo ? 'video/*' : 'image/*';
         if (uploadZoneIcon) uploadZoneIcon.textContent = isVideo ? '🎬' : '📷';
-        if (uploadZoneTitle) uploadZoneTitle.textContent = isVideo ? 'Arrastra tus videos aquí' : 'Arrastra tus imágenes aquí';
+        if (uploadZoneTitle) uploadZoneTitle.textContent = isVideo ? 'Ziehe deine Videos hierher' : 'Ziehe deine Bilder hierher';
         if (uploadZoneSubtitle) uploadZoneSubtitle.textContent = isVideo
-            ? 'o haz clic para seleccionarlos — usa clips cortos y livianos'
-            : 'o haz clic para seleccionarlas — se guardan en máxima calidad';
+            ? 'oder klicke, um sie auszuwählen — verwende kurze und leichte Clips'
+            : 'oder klicke, um sie auszuwählen — sie werden in höchster Qualität gespeichert';
         if (uploadZoneFormats) {
             uploadZoneFormats.innerHTML = isVideo
                 ? '<span>MP4</span><span>WEBM</span><span>MOV</span>'
                 : '<span>JPG</span><span>PNG</span><span>WEBP</span>';
         }
-        if (uploadPanelTitle) uploadPanelTitle.textContent = isVideo ? 'Importar videos' : 'Importar fotos';
+        if (uploadPanelTitle) uploadPanelTitle.textContent = isVideo ? 'Videos importieren' : 'Fotos importieren';
         if (uploadPanelSubtitle) uploadPanelSubtitle.textContent = isVideo
-            ? 'Elige la sección donde se publicarán y luego arrastra o selecciona tus videos.'
-            : 'Elige la sección donde se publicarán y luego arrastra o selecciona tus imágenes.';
+            ? 'Wähle den Bereich aus, in dem sie veröffentlicht werden, und ziehe dann deine Videos hinein oder wähle sie aus.'
+            : 'Wähle den Bereich aus, in dem sie veröffentlicht werden, und ziehe dann deine Bilder hinein oder wähle sie aus.';
         if (uploadUrlLabel) uploadUrlLabel.textContent = isVideo
-            ? 'Pega una o varias URLs de videos (una por línea)'
-            : 'Pega una o varias URLs de imágenes (una por línea)';
+            ? 'Füge eine oder mehrere Video-URLs ein (eine pro Zeile)'
+            : 'Füge eine oder mehrere Bild-URLs ein (eine pro Zeile)';
         if (urlInput) urlInput.placeholder = isVideo
             ? 'https://ejemplo.com/video1.mp4\nhttps://ejemplo.com/video2.mp4'
             : 'https://ejemplo.com/foto1.jpg\nhttps://ejemplo.com/foto2.jpg';
@@ -3919,7 +3919,7 @@
                 }, (err) => {
                     if (seq !== loadSeq) return;
                     photosLoading = false;
-                    showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
+                    showStatus('Die Fotos konnten nicht von Firebase geladen werden: ' + err.message, 'error');
                     render();
                 });
             } else {
@@ -3939,7 +3939,7 @@
         } catch (err) {
             if (seq !== loadSeq) return;
             photosLoading = false;
-            showStatus('No se pudieron cargar las fotos desde Firebase: ' + err.message, 'error');
+            showStatus('Die Fotos konnten nicht von Firebase geladen werden: ' + err.message, 'error');
             render();
         }
     }
@@ -3993,7 +3993,7 @@
     function formatDate(iso) {
         if (!iso) return '';
         try {
-            return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+            return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
         } catch {
             return '';
         }
@@ -4010,14 +4010,14 @@
 
         const isMixedSection = currentSection === 'inicio' || currentSection === 'anime' || currentSection === 'premium';
         const isVideoSection = currentSection === 'videos';
-        const unitSingular = isMixedSection ? ' elemento' : (isVideoSection ? ' video' : ' foto');
-        const unitPlural = isMixedSection ? ' elementos' : (isVideoSection ? ' videos' : ' fotos');
+        const unitSingular = isMixedSection ? ' Element' : (isVideoSection ? ' Video' : ' Foto');
+        const unitPlural = isMixedSection ? ' Elemente' : (isVideoSection ? ' Videos' : ' Fotos');
 
         // Mientras llega la primera respuesta de Firestore para esta sección
         // se muestra una cuadrícula de "esqueletos" en vez de dejarla en
         // blanco o mostrar "no hay fotos" antes de tiempo.
         if (photosLoading) {
-            photoCount.textContent = 'Cargando…';
+            photoCount.textContent = 'Wird geladen…';
             emptyState.style.display = 'none';
             galleryGrid.style.display = 'grid';
             const skeletonCount = Math.min(PHOTOS_PER_PAGE, 12);
@@ -4039,14 +4039,14 @@
 
         photoCount.textContent = knownCount
             ? totalCount + (totalCount === 1 ? unitSingular : unitPlural)
-            : 'Cargando…';
+            : 'Wird geladen…';
 
         const isEmpty = knownCount && totalCount === 0;
         emptyState.style.display = isEmpty ? 'block' : 'none';
         emptyState.innerHTML = (isMixedSection
-                ? '<span class="icon">✨</span>Aún no hay contenido para mostrar aquí.'
-                : (isVideoSection ? '<span class="icon">🎬</span>Aún no hay videos en esta sección.' : '<span class="icon">🖼️</span>Aún no hay fotos en esta sección.')) +
-            (isAdmin ? '<br>Usa el panel de arriba para importar ' + (isMixedSection ? 'el primer contenido.' : (isVideoSection ? 'los primeros videos.' : 'las primeras imágenes.')) : '');
+                ? '<span class="icon">✨</span>Hier gibt es noch keinen Inhalt.'
+                : (isVideoSection ? '<span class="icon">🎬</span>In diesem Bereich gibt es noch keine Videos.' : '<span class="icon">🖼️</span>In diesem Bereich gibt es noch keine Fotos.')) +
+            (isAdmin ? '<br>Verwende das Panel oben, um ' + (isMixedSection ? 'die ersten Inhalte zu importieren.' : (isVideoSection ? 'die ersten Videos zu importieren.' : 'die ersten Bilder zu importieren.')) : '');
         galleryGrid.style.display = isEmpty ? 'none' : 'grid';
 
         const totalPages = knownCount ? Math.max(1, Math.ceil(totalCount / PHOTOS_PER_PAGE)) : currentPage;
@@ -4078,14 +4078,14 @@
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                     </span>` : ''}
                     <div class="top-left-badges">
-                        <button class="download-btn" data-id="${photo.id}" aria-label="Descargar ${isVideo ? 'video' : 'foto'}" title="Descargar">
+                        <button class="download-btn" data-id="${photo.id}" aria-label="${isVideo ? 'Video' : 'Foto'} herunterladen" title="Herunterladen">
                             <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                        ${isNew ? '<span class="badge-new">NUEVO</span>' : ''}
+                        ${isNew ? '<span class="badge-new">NEU</span>' : ''}
                     </div>
                     <div class="overlay"></div>
                     ${isAdmin ? `
-                    <button class="delete-btn" data-id="${photo.id}" aria-label="Eliminar ${isVideo ? 'video' : 'foto'}" title="Eliminar">
+                    <button class="delete-btn" data-id="${photo.id}" aria-label="${isVideo ? 'Video' : 'Foto'} löschen" title="Löschen">
                         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM4 7h16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>` : ''}
                 </div>
@@ -4121,7 +4121,7 @@
         const prevBtn = document.createElement('button');
         prevBtn.className = 'page-btn';
         prevBtn.textContent = '‹';
-        prevBtn.setAttribute('aria-label', 'Página anterior');
+        prevBtn.setAttribute('aria-label', 'Vorherige Seite');
         prevBtn.disabled = currentPage === 1;
         prevBtn.addEventListener('click', () => goToPage(currentPage - 1));
         pagination.appendChild(prevBtn);
@@ -4143,7 +4143,7 @@
             const pageBtn = document.createElement('button');
             pageBtn.className = 'page-btn' + (p === currentPage ? ' active' : '');
             pageBtn.textContent = p;
-            pageBtn.setAttribute('aria-label', 'Ir a la página ' + p);
+            pageBtn.setAttribute('aria-label', 'Zur Seite ' + p + ' gehen');
             if (p === currentPage) pageBtn.setAttribute('aria-current', 'page');
             pageBtn.addEventListener('click', () => goToPage(p));
             pagination.appendChild(pageBtn);
@@ -4154,7 +4154,7 @@
         const nextBtn = document.createElement('button');
         nextBtn.className = 'page-btn';
         nextBtn.textContent = '›';
-        nextBtn.setAttribute('aria-label', 'Página siguiente');
+        nextBtn.setAttribute('aria-label', 'Nächste Seite');
         nextBtn.disabled = currentPage === totalPages;
         nextBtn.addEventListener('click', () => goToPage(currentPage + 1));
         pagination.appendChild(nextBtn);
@@ -4200,12 +4200,12 @@
         const files = Array.from(fileList).filter(f => f.type.startsWith(expectedPrefix));
 
         if (files.length === 0) {
-            showStatus(isVideoUpload ? 'Selecciona archivos de video válidos.' : 'Selecciona archivos de imagen válidos.', 'error');
+            showStatus(isVideoUpload ? 'Wähle gültige Videodateien aus.' : 'Wähle gültige Bilddateien aus.', 'error');
             return;
         }
 
         const label = (SECTION_META[uploadCategory] || SECTION_META.inicio).label;
-        showStatus('Importando ' + files.length + (files.length === 1 ? (isVideoUpload ? ' video...' : ' foto...') : (isVideoUpload ? ' videos...' : ' fotos...')) + ' en "' + label + '"');
+        showStatus('Importiere ' + files.length + (files.length === 1 ? (isVideoUpload ? ' Video...' : ' Foto...') : (isVideoUpload ? ' Videos...' : ' Fotos...')) + ' in "' + label + '"');
 
         let imported = 0;
         for (const file of files) {
@@ -4218,8 +4218,8 @@
                 // video esto obliga a usar clips muy cortos y de baja resolución.
                 if (dataUrl.length > 900000) {
                     showStatus(
-                        '"' + file.name + '" pesa demasiado para guardarse como base64 (máx. ~650KB). ' +
-                        (isVideoUpload ? 'Usa un clip más corto o de menor resolución e inténtalo de nuevo.' : 'Comprímela e inténtalo de nuevo.'),
+                        '"' + file.name + '" ist zu groß, um als Base64 gespeichert zu werden (max. ~650KB). ' +
+                        (isVideoUpload ? 'Verwende einen kürzeren Clip oder eine geringere Auflösung und versuche es erneut.' : 'Komprimiere es und versuche es erneut.'),
                         'error'
                     );
                     continue;
@@ -4249,7 +4249,7 @@
                 await addDoc(collection(db, 'photos'), docData);
                 imported++;
             } catch (err) {
-                showStatus('Hubo un problema subiendo "' + file.name + '": ' + err.message, 'error');
+                showStatus('Beim Hochladen von "' + file.name + '" ist ein Problem aufgetreten: ' + err.message, 'error');
             }
         }
 
@@ -4260,7 +4260,7 @@
             // tiempo real) para verlas de inmediato.
             if (currentSection === uploadCategory) currentPage = 1;
             invalidateSection(uploadCategory, true);
-            showStatus(isVideoUpload ? 'Videos importados correctamente.' : 'Fotos importadas correctamente.', 'success');
+            showStatus(isVideoUpload ? 'Videos erfolgreich importiert.' : 'Fotos erfolgreich importiert.', 'success');
         }
         fileInput.value = '';
     }
@@ -4296,15 +4296,15 @@
         const invalidCount = lines.length - urls.length;
 
         if (urls.length === 0) {
-            showStatus('Pega al menos una URL válida (que empiece con http:// o https://).', 'error');
+            showStatus('Füge mindestens eine gültige URL ein (die mit http:// oder https:// beginnt).', 'error');
             return;
         }
         if (invalidCount > 0) {
-            showStatus(invalidCount + ' línea(s) no parecían una URL válida y se ignoraron.', 'error');
+            showStatus(invalidCount + ' Zeile(n) sahen nicht wie eine gültige URL aus und wurden ignoriert.', 'error');
         }
 
         const label = (SECTION_META[uploadCategory] || SECTION_META.inicio).label;
-        showStatus('Importando ' + urls.length + (urls.length === 1 ? (isVideoUpload ? ' video...' : ' foto...') : (isVideoUpload ? ' videos...' : ' fotos...')) + ' en "' + label + '"');
+        showStatus('Importiere ' + urls.length + (urls.length === 1 ? (isVideoUpload ? ' Video...' : ' Foto...') : (isVideoUpload ? ' Videos...' : ' Fotos...')) + ' in "' + label + '"');
 
         let imported = 0;
         for (const url of urls) {
@@ -4337,14 +4337,14 @@
                 await addDoc(collection(db, 'photos'), docData);
                 imported++;
             } catch (err) {
-                showStatus('Hubo un problema importando "' + url + '": ' + err.message, 'error');
+                showStatus('Beim Importieren von "' + url + '" ist ein Problem aufgetreten: ' + err.message, 'error');
             }
         }
 
         if (imported > 0) {
             if (currentSection === uploadCategory) currentPage = 1;
             invalidateSection(uploadCategory, true);
-            showStatus(imported + (imported === 1 ? (isVideoUpload ? ' video importado' : ' foto importada') : (isVideoUpload ? ' videos importados' : ' fotos importadas')) + ' correctamente.', 'success');
+            showStatus(imported + (imported === 1 ? (isVideoUpload ? ' Video importiert' : ' Foto importiert') : (isVideoUpload ? ' Videos importiert' : ' Fotos importiert')) + '.', 'success');
         }
         if (urlInput) urlInput.value = '';
     }
@@ -4423,9 +4423,9 @@
                 // de esta sección: se invalidan y se recarga la página
                 // actual para que la paginación siga siendo correcta.
                 invalidateSection(currentSection, true);
-                showStatus('Foto eliminada.', 'success');
+                showStatus('Foto gelöscht.', 'success');
             } catch (err) {
-                showStatus('No se pudo eliminar: ' + err.message, 'error');
+                showStatus('Konnte nicht gelöscht werden: ' + err.message, 'error');
             }
         }
         pendingDeleteId = null;
@@ -4463,13 +4463,13 @@
 
     if (bulkDeleteConfirmInput && bulkDeleteConfirm) {
         bulkDeleteConfirmInput.addEventListener('input', () => {
-            bulkDeleteConfirm.disabled = bulkDeleteConfirmInput.value.trim() !== 'ELIMINAR';
+            bulkDeleteConfirm.disabled = bulkDeleteConfirmInput.value.trim() !== 'LÖSCHEN';
         });
     }
 
     async function deleteAllPhotos() {
         try {
-            showStatus('Eliminando todas las fotos y videos, un momento…');
+            showStatus('Alle Fotos und Videos werden gelöscht, einen Moment…');
             const allDocs = await getDocs(collection(db, 'photos'));
 
             // Firestore permite hasta 500 operaciones por lote: se borra
@@ -4488,15 +4488,15 @@
             currentPage = 1;
             loadPage(currentSection, 1);
 
-            showStatus(docs.length + ' elemento(s) eliminados. La galería quedó limpia.', 'success');
+            showStatus(docs.length + ' Element(e) gelöscht. Die Galerie ist jetzt leer.', 'success');
         } catch (err) {
-            showStatus('No se pudo vaciar la galería: ' + err.message, 'error');
+            showStatus('Die Galerie konnte nicht geleert werden: ' + err.message, 'error');
         }
     }
 
     if (bulkDeleteConfirm) {
         bulkDeleteConfirm.addEventListener('click', async () => {
-            if (bulkDeleteConfirmInput && bulkDeleteConfirmInput.value.trim() === 'ELIMINAR') {
+            if (bulkDeleteConfirmInput && bulkDeleteConfirmInput.value.trim() === 'LÖSCHEN') {
                 closeBulkDeleteModal();
                 await deleteAllPhotos();
             }
@@ -4534,13 +4534,13 @@
             clearInterval(downloadGateTimerId);
             downloadGateTimerId = null;
         }
-        if (downloadGateTitle) downloadGateTitle.textContent = 'Regístrate para descargar';
-        if (downloadGateText) downloadGateText.textContent = 'Para descargar esta foto necesitas registrarte gratis en nuestra página web y activar tu cuenta a través de tu correo electrónico.';
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Registriere dich, um herunterzuladen';
+        if (downloadGateText) downloadGateText.textContent = 'Um dieses Foto herunterzuladen, musst du dich kostenlos auf unserer Website registrieren und dein Konto per E-Mail aktivieren.';
         if (downloadGateRegister) {
             downloadGateRegister.disabled = false;
             downloadGateRegister.style.opacity = '1';
             downloadGateRegister.style.cursor = 'pointer';
-            downloadGateRegister.textContent = 'Crear cuenta gratis';
+            downloadGateRegister.textContent = 'Kostenloses Konto erstellen';
             downloadGateRegister.onclick = handleDownloadGateRegisterClick;
         }
     }
@@ -4552,19 +4552,19 @@
 
         let tiempoRestante = DOWNLOAD_WAIT_SECONDS;
 
-        if (downloadGateTitle) downloadGateTitle.textContent = 'Completa tu registro';
-        if (downloadGateText) downloadGateText.textContent = 'Se abrió la página de registro en otra pestaña. Cuando termines de registrarte, vuelve aquí para desbloquear la descarga.';
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Schließe deine Registrierung ab';
+        if (downloadGateText) downloadGateText.textContent = 'Die Registrierungsseite wurde in einem neuen Tab geöffnet. Komm hierher zurück, sobald du fertig bist, um den Download freizuschalten.';
 
         downloadGateRegister.disabled = true;
         downloadGateRegister.style.opacity = '0.6';
         downloadGateRegister.style.cursor = 'not-allowed';
         downloadGateRegister.onclick = null;
-        downloadGateRegister.textContent = `Espera ${formatearTiempo(tiempoRestante)} para continuar...`;
+        downloadGateRegister.textContent = `Warte ${formatearTiempo(tiempoRestante)}, um fortzufahren...`;
 
         downloadGateTimerId = setInterval(() => {
             tiempoRestante--;
             if (tiempoRestante > 0) {
-                downloadGateRegister.textContent = `Espera ${formatearTiempo(tiempoRestante)} para continuar...`;
+                downloadGateRegister.textContent = `Warte ${formatearTiempo(tiempoRestante)}, um fortzufahren...`;
             } else {
                 clearInterval(downloadGateTimerId);
                 downloadGateTimerId = null;
@@ -4579,16 +4579,16 @@
     // una notificación invitando a escribir al soporte de Telegram para
     // obtener acceso a descargas ilimitadas.
     function showDownloadGateTelegramNotice() {
-        if (downloadGateTitle) downloadGateTitle.textContent = 'Aviso';
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Hinweis';
         if (downloadGateText) {
-            downloadGateText.innerHTML = 'Si no has podido descargar el contenido, solo escríbeme al chat privado de soporte en Telegram.<br><br>Nuestros asesores te darán acceso a las descargas ilimitadas.<br><br>' +
+            downloadGateText.innerHTML = 'Wenn du den Inhalt nicht herunterladen konntest, schreib mir einfach im privaten Support-Chat auf Telegram.<br><br>Unsere Berater geben dir Zugang zu unbegrenzten Downloads.<br><br>' +
                 `<a href="${TELEGRAM_CHAT_URL}" target="_blank" rel="noopener noreferrer" class="chat-msg-link">${TELEGRAM_CHAT_URL}</a>`;
         }
         if (downloadGateRegister) {
             downloadGateRegister.disabled = false;
             downloadGateRegister.style.opacity = '1';
             downloadGateRegister.style.cursor = 'pointer';
-            downloadGateRegister.textContent = 'Entendido';
+            downloadGateRegister.textContent = 'Verstanden';
             downloadGateRegister.onclick = closeDownloadGate;
         }
     }
@@ -4600,7 +4600,7 @@
         if (!src) return;
         const link = document.createElement('a');
         link.href = src;
-        link.download = photo.name || 'descarga';
+        link.download = photo.name || 'download';
         link.rel = 'noopener noreferrer';
         document.body.appendChild(link);
         link.click();
@@ -4614,13 +4614,13 @@
             clearInterval(downloadGateTimerId);
             downloadGateTimerId = null;
         }
-        if (downloadGateTitle) downloadGateTitle.textContent = 'Descarga pendiente de aprobación';
-        if (downloadGateText) downloadGateText.textContent = 'Ya completaste tu registro. Un administrador debe activar tu permiso de descarga; te avisaremos aquí apenas esté listo.';
+        if (downloadGateTitle) downloadGateTitle.textContent = 'Download wartet auf Genehmigung';
+        if (downloadGateText) downloadGateText.textContent = 'Du hast deine Registrierung bereits abgeschlossen. Ein Administrator muss deine Download-Berechtigung aktivieren; wir benachrichtigen dich hier, sobald es so weit ist.';
         if (downloadGateRegister) {
             downloadGateRegister.disabled = true;
             downloadGateRegister.style.opacity = '0.6';
             downloadGateRegister.style.cursor = 'not-allowed';
-            downloadGateRegister.textContent = 'Esperando aprobación del administrador...';
+            downloadGateRegister.textContent = 'Warte auf Genehmigung durch den Administrator...';
             downloadGateRegister.onclick = null;
         }
     }
