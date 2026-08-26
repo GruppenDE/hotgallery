@@ -2461,7 +2461,7 @@
             </button>
         </div>
 
-        <div class="upload-media-type-tabs hidden" id="uploadMediaTypeTabs" role="tablist" aria-label="Tipo de contenido +18">
+        <div class="upload-media-type-tabs hidden" id="uploadMediaTypeTabs" role="tablist" aria-label="Tipo de contenido">
             <button type="button" class="upload-media-type-btn active" data-media-type="image" role="tab" aria-selected="true">📷 Fotos</button>
             <button type="button" class="upload-media-type-btn" data-media-type="video" role="tab" aria-selected="false">🎬 Videos</button>
         </div>
@@ -3702,7 +3702,12 @@
     }
 
     let uploadCategory = 'inicio';
-    let uploadMediaType = 'image'; // solo aplica cuando uploadCategory === 'adultos'
+    let uploadMediaType = 'image'; // solo aplica en categorías con selector de tipo (ver CATEGORIES_WITH_MEDIA_TYPE_TOGGLE)
+
+    // Categorías donde el admin elige manualmente entre Fotos/Videos con el
+    // toggle. "inicio" siempre son fotos y "videos" siempre son videos, así
+    // que no necesitan el selector.
+    const CATEGORIES_WITH_MEDIA_TYPE_TOGGLE = ['anime', 'premium', 'adultos'];
 
     // Textos/íconos de la zona de carga según se estén importando fotos o videos
     const uploadZoneIcon = document.getElementById('uploadZoneIcon');
@@ -3715,17 +3720,17 @@
     const uploadMediaTypeTabs = document.getElementById('uploadMediaTypeTabs');
     const uploadUrlLabel = document.getElementById('uploadUrlLabel');
 
-    // La categoría "videos" siempre es video; en "+18" el admin elige con el
-    // toggle Fotos/Videos; el resto de secciones son siempre fotos.
+    // La categoría "videos" siempre es video; en "anime", "premium" y "+18"
+    // el admin elige con el toggle Fotos/Videos; "inicio" siempre son fotos.
     function isCurrentUploadVideo() {
         if (uploadCategory === 'videos') return true;
-        if (uploadCategory === 'adultos') return uploadMediaType === 'video';
+        if (CATEGORIES_WITH_MEDIA_TYPE_TOGGLE.includes(uploadCategory)) return uploadMediaType === 'video';
         return false;
     }
 
     function updateUploadZoneUI() {
         const isVideo = isCurrentUploadVideo();
-        if (uploadMediaTypeTabs) uploadMediaTypeTabs.classList.toggle('hidden', uploadCategory !== 'adultos');
+        if (uploadMediaTypeTabs) uploadMediaTypeTabs.classList.toggle('hidden', !CATEGORIES_WITH_MEDIA_TYPE_TOGGLE.includes(uploadCategory));
         if (fileInput) fileInput.accept = isVideo ? 'video/*' : 'image/*';
         if (uploadZoneIcon) uploadZoneIcon.textContent = isVideo ? '🎬' : '📷';
         if (uploadZoneTitle) uploadZoneTitle.textContent = isVideo ? 'Arrastra tus videos aquí' : 'Arrastra tus imágenes aquí';
@@ -3774,7 +3779,7 @@
                 btn.classList.add('active');
                 btn.setAttribute('aria-selected', 'true');
                 uploadCategory = btn.dataset.category || 'inicio';
-                if (uploadCategory !== 'adultos') {
+                if (!CATEGORIES_WITH_MEDIA_TYPE_TOGGLE.includes(uploadCategory)) {
                     uploadMediaType = 'image';
                     if (uploadMediaTypeTabs) {
                         uploadMediaTypeTabs.querySelectorAll('.upload-media-type-btn').forEach(b => {
@@ -3987,7 +3992,7 @@
     function render() {
         galleryGrid.innerHTML = '';
 
-        const isMixedSection = currentSection === 'inicio';
+        const isMixedSection = currentSection === 'inicio' || currentSection === 'anime' || currentSection === 'premium';
         const isVideoSection = currentSection === 'videos';
         const unitSingular = isMixedSection ? ' elemento' : (isVideoSection ? ' video' : ' foto');
         const unitPlural = isMixedSection ? ' elementos' : (isVideoSection ? ' videos' : ' fotos');
