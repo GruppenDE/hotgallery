@@ -3825,6 +3825,12 @@
     const sectionCounts = {};      // { [section]: totalDeFotosEnEsaCategoria }
 
     function baseSectionQuery(section) {
+        // "inicio" es un feed mezclado: muestra fotos/videos de TODAS las
+        // categorías (inicio, videos, anime, premium, +18) juntas, en vez
+        // de filtrar solo por category == 'inicio'.
+        if (section === 'inicio') {
+            return query(collection(db, 'photos'), orderBy('addedAt', 'desc'));
+        }
         return query(collection(db, 'photos'), where('category', '==', section), orderBy('addedAt', 'desc'));
     }
 
@@ -3832,7 +3838,10 @@
         try {
             // Consulta de conteo aparte (sin orderBy): solo necesita el
             // índice automático de "category", nunca el compuesto.
-            const countQuery = query(collection(db, 'photos'), where('category', '==', section));
+            // "inicio" cuenta TODA la colección (feed mezclado).
+            const countQuery = section === 'inicio'
+                ? collection(db, 'photos')
+                : query(collection(db, 'photos'), where('category', '==', section));
             const snap = await getCountFromServer(countQuery);
             sectionCounts[section] = snap.data().count;
         } catch (err) {
@@ -3917,10 +3926,19 @@
     // Invalida la caché de cursores/conteo de una sección (usar tras
     // subir o borrar una foto, para que la paginación vuelva a coincidir
     // con la realidad) y, si es la sección visible, recarga su página.
+    // Como "inicio" es un feed mezclado de todas las categorías, cualquier
+    // cambio en cualquier sección también debe invalidar "inicio".
     function invalidateSection(section, reload) {
         delete pageLastDocs[section];
         delete sectionCounts[section];
-        if (reload && currentSection === section) loadPage(section, currentPage);
+        if (section !== 'inicio') {
+            delete pageLastDocs.inicio;
+            delete sectionCounts.inicio;
+        }
+        const affectedSection = (currentSection === section || (section !== 'inicio' && currentSection === 'inicio'))
+            ? currentSection
+            : null;
+        if (reload && affectedSection) loadPage(affectedSection, currentPage);
     }
 
     function showStatus(msg, type) {
@@ -3969,9 +3987,10 @@
     function render() {
         galleryGrid.innerHTML = '';
 
+        const isMixedSection = currentSection === 'inicio';
         const isVideoSection = currentSection === 'videos';
-        const unitSingular = isVideoSection ? ' video' : ' foto';
-        const unitPlural = isVideoSection ? ' videos' : ' fotos';
+        const unitSingular = isMixedSection ? ' elemento' : (isVideoSection ? ' video' : ' foto');
+        const unitPlural = isMixedSection ? ' elementos' : (isVideoSection ? ' videos' : ' fotos');
 
         // Mientras llega la primera respuesta de Firestore para esta sección
         // se muestra una cuadrícula de "esqueletos" en vez de dejarla en
@@ -4003,8 +4022,10 @@
 
         const isEmpty = knownCount && totalCount === 0;
         emptyState.style.display = isEmpty ? 'block' : 'none';
-        emptyState.innerHTML = (isVideoSection ? '<span class="icon">🎬</span>Aún no hay videos en esta sección.' : '<span class="icon">🖼️</span>Aún no hay fotos en esta sección.') +
-            (isAdmin ? '<br>Usa el panel de arriba para importar ' + (isVideoSection ? 'los primeros videos.' : 'las primeras imágenes.') : '');
+        emptyState.innerHTML = (isMixedSection
+                ? '<span class="icon">✨</span>Aún no hay contenido para mostrar aquí.'
+                : (isVideoSection ? '<span class="icon">🎬</span>Aún no hay videos en esta sección.' : '<span class="icon">🖼️</span>Aún no hay fotos en esta sección.')) +
+            (isAdmin ? '<br>Usa el panel de arriba para importar ' + (isMixedSection ? 'el primer contenido.' : (isVideoSection ? 'los primeros videos.' : 'las primeras imágenes.')) : '');
         galleryGrid.style.display = isEmpty ? 'none' : 'grid';
 
         const totalPages = knownCount ? Math.max(1, Math.ceil(totalCount / PHOTOS_PER_PAGE)) : currentPage;
@@ -4047,9 +4068,9 @@
                         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zM4 7h16" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>` : ''}
                 </div>
-                ${(meta || isAdmin) ? `
+                ${(meta || isAdmin || isMixedSection) ? `
                 <div class="photo-info">
-                    <p class="photo-meta">${meta}${isAdmin ? (meta ? ' · ' : '') + catMeta.label : ''}</p>
+                    <p class="photo-meta">${meta}${(isAdmin || isMixedSection) ? (meta ? ' · ' : '') + catMeta.label : ''}</p>
                 </div>` : ''}
             `;
             if (isVideo) {
