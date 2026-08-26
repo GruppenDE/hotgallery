@@ -584,6 +584,21 @@
         margin-right: auto;
     }
 
+    .site-nav-logo {
+        height: 34px;
+        width: auto;
+        display: block;
+        margin-right: auto;
+    }
+
+    /* Oculta el botón de hamburguesa en escritorio: el menú ya se
+       muestra en fila y no necesita el toggle de móvil. */
+    @media (min-width: 721px) {
+        .hamburger-btn {
+            display: none;
+        }
+    }
+
     .hamburger-btn {
         width: 38px;
         height: 38px;
@@ -2368,7 +2383,7 @@
         <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu">
             <span></span><span></span><span></span>
         </button>
-        <span class="site-nav-brand">LampSex</span>
+        <img src="logo.png" alt="LampSex" class="site-nav-logo">
         <ul class="nav-menu" id="navMenu">
             <li><a href="#" class="nav-link active" data-section="inicio">Inicio</a></li>
             <li><a href="#" class="nav-link" data-section="videos">Videos</a></li>
