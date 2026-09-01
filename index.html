@@ -478,18 +478,68 @@
         border-radius: 2px;
     }
 
-    /* Formulario de registro: comparte estilo con .login-form,
-       pero se muestra/oculta según el modo activo de la escena */
-    .register-form {
+    /* Formulario de administrador: comparte estilo con .login-form,
+       pero permanece oculto hasta que se pulsa el candado */
+    .admin-login-form {
         display: none;
     }
 
-    .scene.mode-register #loginCard {
+    .scene.mode-admin #ageGateCard {
         display: none;
     }
 
-    .scene.mode-register #registerCard {
+    .scene.mode-admin #loginCard {
         display: block;
+    }
+
+    /* Botones de la verificación de edad */
+    .age-gate-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-decline {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        border: 1px solid var(--field-border);
+        border-radius: 8px;
+        color: var(--ink-muted);
+        font-weight: 500;
+        font-size: 0.88rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-decline:hover,
+    .btn-decline:focus-visible {
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    /* Candado discreto: único punto de entrada al login de administrador */
+    .admin-lock-btn {
+        position: fixed;
+        bottom: 14px;
+        right: 14px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.28);
+        font-size: 0.95rem;
+        line-height: 1;
+        cursor: pointer;
+        z-index: 30;
+        transition: opacity 0.3s ease, color 0.3s ease, background 0.3s ease;
+    }
+
+    .admin-lock-btn:hover,
+    .admin-lock-btn:focus-visible {
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.14);
     }
 
     .form-error {
@@ -2550,59 +2600,41 @@
     </div>
 
     <div class="scene">
-        <!-- Formulario de Login -->
-        <div class="login-form" id="loginCard" lang="de">
-            <span class="form-eyebrow">Anmelden</span>
-            <h2>Willkommen zurück</h2>
-            <p class="form-subtitle">Gib deine Zugangsdaten ein, um auf deinen Arbeitsbereich zuzugreifen.</p>
-            <form id="loginForm" autocomplete="on">
-                <div class="form-group">
-                    <label for="username">Benutzername</label>
-                    <input id="username" name="username" type="text" placeholder="Gib deinen Benutzernamen ein" autocomplete="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Passwort</label>
-                    <input id="password" name="password" type="password" placeholder="Gib dein Passwort ein" autocomplete="current-password" required>
-                </div>
-                <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" name="remember">
-                        Angemeldet bleiben
-                    </label>
-                    <a href="#">Passwort vergessen?</a>
-                </div>
-                <p class="form-error" id="loginError"></p>
-                <button class="login-btn" type="submit">Anmelden</button>
-            </form>
-            <p class="form-footer">Noch kein Konto? <a href="#" id="toRegister">Jetzt erstellen</a></p>
+        <!-- Verificación de edad: reemplaza el registro/login público -->
+        <div class="login-form" id="ageGateCard" lang="es">
+            <span class="form-eyebrow">Bienvenido</span>
+            <h2>¿Eres mayor de 18 años?</h2>
+            <p class="form-subtitle">Este sitio contiene contenido exclusivo para adultos. Confirma tu edad para continuar.</p>
+            <div class="age-gate-actions">
+                <button class="login-btn" type="button" id="ageConfirmBtn">Sí, soy mayor de edad</button>
+                <button class="btn-decline" type="button" id="ageDeclineBtn">No, salir</button>
+            </div>
         </div>
 
-        <!-- Formulario de Registro -->
-        <div class="login-form register-form" id="registerCard" lang="de">
-            <span class="form-eyebrow">Registrieren</span>
-            <h2>Konto erstellen</h2>
-            <p class="form-subtitle">Tritt dem Arbeitsbereich in wenigen Sekunden bei.</p>
-            <form id="registerForm" autocomplete="on" novalidate>
+        <!-- Acceso de administrador: oculto tras el candado, solo para gestionar el sitio -->
+        <div class="login-form admin-login-form" id="loginCard" lang="es">
+            <span class="form-eyebrow">Acceso privado</span>
+            <h2>Panel de administrador</h2>
+            <p class="form-subtitle">Solo el administrador del sitio puede iniciar sesión aquí.</p>
+            <form id="loginForm" autocomplete="on">
                 <div class="form-group">
-                    <label for="reg-username">Benutzername</label>
-                    <input id="reg-username" name="username" type="text" placeholder="Wähle einen Benutzernamen" autocomplete="username" required minlength="3">
+                    <label for="username">Usuario</label>
+                    <input id="username" name="username" type="text" placeholder="Usuario" autocomplete="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="reg-password">Passwort</label>
-                    <input id="reg-password" name="password" type="password" placeholder="Erstelle ein Passwort" autocomplete="new-password" required minlength="6">
+                    <label for="password">Contraseña</label>
+                    <input id="password" name="password" type="password" placeholder="Contraseña" autocomplete="current-password" required>
                 </div>
-                <div class="form-group">
-                    <label for="reg-confirm">Passwort bestätigen</label>
-                    <input id="reg-confirm" name="confirm" type="password" placeholder="Wiederhole dein Passwort" autocomplete="new-password" required minlength="6">
-                </div>
-                <p class="form-error" id="registerError"></p>
-                <button class="login-btn" type="submit">Konto erstellen</button>
+                <p class="form-error" id="loginError"></p>
+                <button class="login-btn" type="submit">Iniciar sesión</button>
             </form>
-            <p class="form-footer">Du hast bereits ein Konto? <a href="#" id="toLogin">Anmelden</a></p>
+            <p class="form-footer"><a href="#" id="toAgeGate">← Volver</a></p>
         </div>
     </div>
 
-    <p class="hint" id="hint">🖱️ Halte die Schnur gedrückt und ziehe sie nach unten (oder drücke Enter), um einzuschalten</p>
+    <p class="hint" id="hint">🖱️ Mantén la cuerda presionada y tira hacia abajo (o pulsa Enter) para encender la luz</p>
+
+    <button type="button" class="admin-lock-btn" id="adminLockBtn" aria-label="Acceso de administrador" title="Acceso de administrador">🔒</button>
 
 </div>
 
@@ -2907,7 +2939,6 @@
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import {
         getAuth,
-        createUserWithEmailAndPassword,
         signInWithEmailAndPassword,
         onAuthStateChanged,
         signOut
@@ -3638,11 +3669,11 @@
     const loginBtn = loginForm.querySelector('.login-btn');
 
     const scene = document.querySelector('.scene');
-    const toRegister = document.getElementById('toRegister');
-    const toLogin = document.getElementById('toLogin');
-    const registerForm = document.getElementById('registerForm');
-    const registerBtn = registerForm.querySelector('.login-btn');
-    const registerError = document.getElementById('registerError');
+    const ageConfirmBtn = document.getElementById('ageConfirmBtn');
+    const ageDeclineBtn = document.getElementById('ageDeclineBtn');
+    const adminLockBtn = document.getElementById('adminLockBtn');
+    const toAgeGate = document.getElementById('toAgeGate');
+    const loginError = document.getElementById('loginError');
 
     let isDragging = false;
     let startY = 0;
@@ -3725,98 +3756,49 @@
         }
     });
 
-    document.querySelectorAll('.form-options a').forEach(link => {
-        link.addEventListener('click', (e) => e.preventDefault());
+    /* ============================================
+       Verificación de edad (+18): reemplaza el
+       registro/login público. Cualquier visitante
+       puede confirmar su edad y entrar a la galería
+       sin crear una cuenta.
+       ============================================ */
+    ageConfirmBtn.addEventListener('click', () => {
+        goToGallery();
     });
 
-    function showRegisterMode() {
-        scene.classList.add('mode-register');
-        registerError.classList.remove('visible');
-        registerError.textContent = '';
-        const firstField = document.getElementById('reg-username');
-        if (firstField) firstField.focus();
-    }
+    ageDeclineBtn.addEventListener('click', () => {
+        // El visitante indica que es menor de edad: se le saca del sitio.
+        window.location.href = 'https://www.google.com';
+    });
 
-    function showLoginMode() {
-        scene.classList.remove('mode-register');
+    /* ============================================
+       Candado de administrador: único punto de
+       entrada al formulario de login. Los visitantes
+       normales nunca ven este formulario a menos que
+       pulsen este botón discreto.
+       ============================================ */
+    function showAdminLogin() {
+        scene.classList.add('mode-admin');
+        body.classList.add('light-on');
+        pullTrigger.setAttribute('aria-pressed', 'true');
+        loginError.classList.remove('visible');
+        loginError.textContent = '';
         const firstField = document.getElementById('username');
         if (firstField) firstField.focus();
     }
 
-    toRegister.addEventListener('click', (e) => {
+    function hideAdminLogin() {
+        scene.classList.remove('mode-admin');
+        loginError.classList.remove('visible');
+        loginError.textContent = '';
+    }
+
+    adminLockBtn.addEventListener('click', showAdminLogin);
+
+    toAgeGate.addEventListener('click', (e) => {
         e.preventDefault();
-        showRegisterMode();
+        hideAdminLogin();
     });
-
-    toLogin.addEventListener('click', (e) => {
-        e.preventDefault();
-        showLoginMode();
-    });
-
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const usernameField = document.getElementById('reg-username');
-        const password = document.getElementById('reg-password');
-        const confirm = document.getElementById('reg-confirm');
-
-        registerError.classList.remove('visible');
-        registerError.textContent = '';
-
-        if (!registerForm.checkValidity()) {
-            registerForm.reportValidity();
-            return;
-        }
-
-        if (password.value !== confirm.value) {
-            registerError.textContent = 'Die Passwörter stimmen nicht überein. Bitte versuche es erneut.';
-            registerError.classList.add('visible');
-            confirm.focus();
-            return;
-        }
-
-        const originalLabel = 'Konto erstellen';
-        registerBtn.disabled = true;
-        registerBtn.textContent = 'Konto wird erstellt...';
-
-        try {
-            const usernameRaw = usernameField.value.trim();
-            const cred = await createUserWithEmailAndPassword(auth, usernameToEmail(usernameRaw), password.value);
-            // Perfil en Firestore: aquí vive el permiso de descarga que
-            // solo el administrador puede activar manualmente.
-            try {
-                await setDoc(doc(db, 'users', cred.user.uid), {
-                    username: usernameRaw,
-                    email: cred.user.email,
-                    downloadAllowed: false,
-                    createdAt: new Date().toISOString()
-                });
-            } catch (profileErr) {
-                // No bloquea la creación de la cuenta si esto falla; se
-                // reintenta al iniciar sesión mediante ensureUserDoc().
-            }
-            registerBtn.textContent = 'Konto erstellt!';
-            setTimeout(() => {
-                registerBtn.textContent = originalLabel;
-                registerBtn.disabled = false;
-                registerForm.reset();
-                showLoginMode();
-            }, 1400);
-        } catch (err) {
-            registerBtn.textContent = originalLabel;
-            registerBtn.disabled = false;
-            if (err.code === 'auth/email-already-in-use') {
-                registerError.textContent = 'Dieser Benutzername wird bereits verwendet.';
-            } else if (err.code === 'auth/weak-password') {
-                registerError.textContent = 'Das Passwort muss mindestens 6 Zeichen lang sein.';
-            } else {
-                registerError.textContent = 'Das Konto konnte nicht erstellt werden: ' + err.message;
-            }
-            registerError.classList.add('visible');
-        }
-    });
-
-    const loginError = document.getElementById('loginError');
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
