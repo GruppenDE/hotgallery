@@ -518,30 +518,6 @@
         color: var(--danger);
     }
 
-    /* Candado discreto: único punto de entrada al login de administrador */
-    .admin-lock-btn {
-        position: fixed;
-        bottom: 14px;
-        right: 14px;
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        border: none;
-        background: rgba(255, 255, 255, 0.06);
-        color: rgba(255, 255, 255, 0.28);
-        font-size: 0.95rem;
-        line-height: 1;
-        cursor: pointer;
-        z-index: 30;
-        transition: opacity 0.3s ease, color 0.3s ease, background 0.3s ease;
-    }
-
-    .admin-lock-btn:hover,
-    .admin-lock-btn:focus-visible {
-        color: rgba(255, 255, 255, 0.8);
-        background: rgba(255, 255, 255, 0.14);
-    }
-
     .form-error {
         color: #ff8f8f;
         font-size: 0.76rem;
@@ -554,15 +530,33 @@
         display: block;
     }
 
-    .hint {
+    /* ============================================
+       Footer de la página de login: barra fija al pie
+       con el texto de ayuda a la izquierda/centro y el
+       candado de administrador a la derecha, en vez de
+       un círculo suelto flotando sobre el contenido.
+       ============================================ */
+    .login-footer {
         position: fixed;
-        bottom: 15px;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+        /* Por encima del banner de instalación PWA (z-index: 9999), que
+           en móvil ocupa todo el ancho inferior y lo taparía por completo. */
+        z-index: 10000;
+    }
+
+    .hint {
+        flex: 1;
+        min-width: 0;
         color: rgba(255,255,255,0.4);
         font-size: 0.75rem;
         text-align: center;
-        width: 90%;
         letter-spacing: 0.5px;
         animation: pulseHint 2s infinite;
         pointer-events: none;
@@ -571,6 +565,37 @@
     @keyframes pulseHint {
         0%, 100% { opacity: 0.4; }
         50% { opacity: 0.8; }
+    }
+
+    /* Candado discreto: único punto de entrada al login de administrador */
+    .admin-lock-btn {
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.28);
+        font-size: 0.95rem;
+        line-height: 1;
+        cursor: pointer;
+        transition: opacity 0.3s ease, color 0.3s ease, background 0.3s ease;
+    }
+
+    .admin-lock-btn:hover,
+    .admin-lock-btn:focus-visible {
+        color: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.14);
+    }
+
+    @media (max-width: 420px) {
+        .login-footer {
+            justify-content: space-between;
+        }
+
+        .hint {
+            text-align: left;
+        }
     }
 
     /* ============================================
@@ -2632,9 +2657,10 @@
         </div>
     </div>
 
-    <p class="hint" id="hint">🖱️ Mantén la cuerda presionada y tira hacia abajo (o pulsa Enter) para encender la luz</p>
-
-    <button type="button" class="admin-lock-btn" id="adminLockBtn" aria-label="Acceso de administrador" title="Acceso de administrador">🔒</button>
+    <footer class="login-footer">
+        <p class="hint" id="hint">🖱️ Mantén la cuerda presionada y tira hacia abajo (o pulsa Enter) para encender la luz</p>
+        <button type="button" class="admin-lock-btn" id="adminLockBtn" aria-label="Acceso de administrador" title="Acceso de administrador">🔒</button>
+    </footer>
 
 </div>
 
