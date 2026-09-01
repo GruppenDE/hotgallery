@@ -4959,7 +4959,11 @@
        ============================================ */
     (function () {
         const LS_INSTALLED_KEY = 'pwa_app_installed';
-        const LS_DISMISS_KEY = 'pwa_banner_dismissed_until';
+        // Ya no se usa una clave persistente de "descartado por X días":
+        // el cierre del banner solo dura la visita actual (variable en memoria),
+        // así que al recargar la página el aviso vuelve a aparecer si el usuario
+        // todavía no instaló la app.
+        let dismissedThisVisit = false;
 
         const banner = document.getElementById('pwaInstallBanner');
         const bannerTitle = document.getElementById('pwaInstallTitle');
@@ -4989,14 +4993,12 @@
         }
 
         function wasDismissedRecently() {
-            const until = Number(localStorage.getItem(LS_DISMISS_KEY) || 0);
-            return Date.now() < until;
+            return dismissedThisVisit;
         }
 
-        function dismissBanner(days) {
+        function dismissBanner() {
             hideBanner();
-            const until = Date.now() + (days || 7) * 24 * 60 * 60 * 1000;
-            localStorage.setItem(LS_DISMISS_KEY, String(until));
+            dismissedThisVisit = true;
         }
 
         function showBanner() {
@@ -5029,7 +5031,7 @@
             bannerSubtitle.textContent = 'Ábrela desde el ícono en tu pantalla de inicio';
             banner.classList.add('pwa-already-installed');
             if (!wasDismissedRecently()) showBanner();
-            btnClose.addEventListener('click', () => dismissBanner(1));
+            btnClose.addEventListener('click', () => dismissBanner());
             return;
         }
 
@@ -5074,7 +5076,7 @@
             }
         });
 
-        btnClose.addEventListener('click', () => dismissBanner(7));
+        btnClose.addEventListener('click', () => dismissBanner());
 
         // Cuando el navegador confirma que la PWA quedó instalada
         window.addEventListener('appinstalled', () => {
