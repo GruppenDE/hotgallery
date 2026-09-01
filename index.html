@@ -2966,6 +2966,7 @@
     import {
         getAuth,
         signInWithEmailAndPassword,
+        signInAnonymously,
         onAuthStateChanged,
         signOut
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -3091,6 +3092,18 @@
         return local || '';
     }
 
+    // Los visitantes que solo confirmaron su edad (sin registrarse) entran
+    // con una sesión anónima de Firebase: no tienen email/username, así
+    // que para el chat se les muestra un nombre corto derivado de su UID
+    // en vez de un espacio vacío o el UID completo.
+    function getChatMeta(user) {
+        if (!user) return { username: '', email: '' };
+        if (user.isAnonymous) {
+            return { username: 'Gast-' + user.uid.slice(0, 6), email: '' };
+        }
+        return { username: getDisplayUsername(user), email: user.email || '' };
+    }
+
     function getInitials(username) {
         if (!username) return '?';
         const parts = username.split(/[._-]+/).filter(Boolean);
@@ -3112,7 +3125,7 @@
         if (userInitialsEl) userInitialsEl.textContent = initials;
         if (userDropdownAvatar) userDropdownAvatar.textContent = initials;
         if (userDropdownName) userDropdownName.textContent = username || 'Usuario';
-        if (userDropdownRole) userDropdownRole.textContent = isAdmin ? 'Administrador' : 'Visitante';
+        if (userDropdownRole) userDropdownRole.textContent = isAdmin ? 'Administrador' : (user.isAnonymous ? 'Invitado' : 'Visitante');
     }
 
     function openUserDropdown() {
@@ -3219,8 +3232,9 @@
             const snap = await getDoc(ref);
             if (!snap.exists()) {
                 await setDoc(ref, {
-                    username: getDisplayUsername(user),
+                    username: user.isAnonymous ? getChatMeta(user).username : getDisplayUsername(user),
                     email: user.email,
+                    isAnonymous: !!user.isAnonymous,
                     downloadAllowed: false,
                     createdAt: new Date().toISOString()
                 });
@@ -3292,7 +3306,7 @@
         usersListEl.innerHTML = visibleUsers.map(u => {
             const allowed = !!u.downloadAllowed;
             const registered = !!u.registrationCompletedAt;
-            const statusLabel = allowed ? 'Download aktiviert' : (registered ? 'Warten auf Genehmigung' : 'Nicht bei MyLead registriert');
+            const statusLabel = allowed ? 'Download aktiviert' : (registered ? 'Warten auf Genehmigung' : (u.isAnonymous ? 'Invitado (sin cuenta)' : 'Nicht bei MyLead registriert'));
             const statusClass = allowed ? 'granted' : (registered ? 'pending' : 'none');
             return `
                 <div class="user-row">
@@ -3636,7 +3650,7 @@
         chatFab.addEventListener('click', () => {
             const user = auth.currentUser;
             if (!user) return;
-            openChatFor(user.uid, { isAdminView: false, meta: { username: getDisplayUsername(user), email: user.email } });
+            openChatFor(user.uid, { isAdminView: false, meta: getChatMeta(user) });
         });
     }
 
@@ -3790,6 +3804,18 @@
        ============================================ */
     ageConfirmBtn.addEventListener('click', () => {
         goToGallery();
+        // Inicia una sesión anónima en segundo plano (sin pedir usuario ni
+        // contraseña) para que el visitante tenga un UID con el que poder
+        // escribirle al administrador desde la burbuja de chat, aunque
+        // nunca haya creado una cuenta. Si ya tenía una sesión (anónima o
+        // real) persistida de una visita anterior, no hace falta repetirlo.
+        if (!auth.currentUser) {
+            signInAnonymously(auth).catch(() => {
+                // Si falla (p. ej. el proveedor "Anónimo" está deshabilitado
+                // en Firebase Auth), el visitante sigue viendo la galería
+                // con normalidad, solo que sin burbuja de chat.
+            });
+        }
     });
 
     ageDeclineBtn.addEventListener('click', () => {
